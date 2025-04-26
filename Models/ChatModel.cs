@@ -23,6 +23,7 @@ namespace Models
     public class ChatHistoryItem
     {
         public int Id { get; set; }
+        public string UserIdentityId { get; set; }
         public string Role { get; set; }
         public string Content { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
@@ -37,6 +38,7 @@ namespace Models
     public class PreviousChat
     {
         public int Id { get; set; }
+        public string UserIdentityId { get; set; }
         public string Title { get; set; }
         public DateTime Date { get; set; }
     }

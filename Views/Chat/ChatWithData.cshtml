@@ -140,7 +140,7 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    max-height: 300px;
+    max-height: 600px;
     overflow-y: auto;
 }
 
@@ -199,7 +199,7 @@ html, body {
 .separator hr {
     border: none;
     height: 1px;
-    background-color: #dee2e6;
+            background-color: #160d3d;
     margin: 0;
 }
 
@@ -258,31 +258,48 @@ html, body {
             {
                 <div class="chat-history-header">Chat History</div>
                 <ul class="chat-history">
-                    @for (var i = 0; i < Model.ChatHistory.Count; i += 2)
+                    @{
+                        // ① Build pairs of (user, assistant)
+                        var pairs = Model.ChatHistory
+                        .Select((msg, idx) => new { msg, idx })
+                        .GroupBy(x => x.idx / 2)
+                        .Select(g => new
+                        {
+                            User = g.First().msg,
+                            Assistant = g.Skip(1).FirstOrDefault()?.msg
+                        })
+                        .ToList();
+
+                        // ② Reverse so newest pair is first
+                        pairs.Reverse();
+                    }
+
+                    @foreach (var p in pairs)
                     {
-                        var user = Model.ChatHistory[i];
-                        var assistant = (i + 1 < Model.ChatHistory.Count) ? Model.ChatHistory[i + 1] : null;
                         <li class="chat-message">
                             <div class="avatar user">U</div>
                             <div class="chat-bubble user-message">
-                                <span>@user.Content</span>
-                                <div class="chat-meta">@user.Role • @user.Timestamp.ToLocalTime().ToString("g")</div>
+                                <span>@p.User.Content</span>
+                                <div class="chat-meta">@p.User.Role • @p.User.Timestamp.ToLocalTime().ToString("g")</div>
                             </div>
                         </li>
-                        @if (assistant != null)
+
+                        @if (p.Assistant != null)
                         {
                             <li class="chat-message">
                                 <div class="avatar assistant">A</div>
                                 <div class="chat-bubble assistant-message">
-                                    <span>@assistant.Content</span>
-                                    <div class="chat-meta">@assistant.Role • @assistant.Timestamp.ToLocalTime().ToString("g")</div>
+                                    <span>@p.Assistant.Content</span>
+                                    <div class="chat-meta">@p.Assistant.Role • @p.Assistant.Timestamp.ToLocalTime().ToString("g")</div>
                                 </div>
                             </li>
                         }
+
                         <li class="separator"><hr class="chat-separator" /></li>
                     }
                 </ul>
             }
+
 
             @if (Model.Data?.Any() == true)
             {

@@ -2,6 +2,7 @@ using db_query_v1._0._0._1.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
+using db_query_v1._0._0._1.Data;
 
 namespace db_query_v1._0._0._1
 {
@@ -21,6 +22,8 @@ namespace db_query_v1._0._0._1
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
+            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
+
             // OpenAI HttpClient
             var openAiKey = builder.Configuration["OpenAI:ApiKey"];
             builder.Services.AddHttpClient("OpenAI", client =>
@@ -32,10 +35,7 @@ namespace db_query_v1._0._0._1
 
             builder.Services.AddHttpClient();
 
-            // Identity setup
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+          
 
             builder.Services.ConfigureApplicationCookie(options =>
             {

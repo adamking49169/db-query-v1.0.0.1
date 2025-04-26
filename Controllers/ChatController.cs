@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Microsoft.Data.SqlClient;
+using db_query_v1._0._0._1.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace YourNamespace.Controllers
 {
@@ -53,9 +55,11 @@ namespace YourNamespace.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
-            // 1. Persist user message
+            var userId = _userManager.GetUserId(User);
+
             var userMessage = new ChatHistoryItem
             {
+                UserIdentityId = userId,
                 Role = "user",
                 Content = model.UserInput,
                 Timestamp = DateTime.UtcNow
@@ -68,6 +72,7 @@ namespace YourNamespace.Controllers
             // 3. Persist assistant message
             var assistantHistoryItem = new ChatHistoryItem
             {
+                UserIdentityId = userId,
                 Role = "assistant",
                 Content = response,
                 Timestamp = DateTime.UtcNow
@@ -89,6 +94,7 @@ namespace YourNamespace.Controllers
                 : model.UserInput;
             _db.PreviousChats.Add(new PreviousChat
             {
+                UserIdentityId = userId,
                 Title = summaryTitle,
                 Date = DateTime.UtcNow
             });
@@ -144,7 +150,34 @@ namespace YourNamespace.Controllers
 
             return View(model);
         }
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> SendMessage(ChatModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
 
+            // 1) Get the current user's Id
+            var userId = _userManager.GetUserId(User);
+            // Alternatively: var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // 2) Create & populate the ChatHistoryItem
+            var historyItem = new ChatHistoryItem
+            {
+                UserIdentityId = userId,         // ← THIS is _required_
+                Role = "user",
+                Content = model.UserInput,
+                Timestamp = DateTime.UtcNow
+            };
+
+            // 3) Save it
+            _db.ChatHistoryItems.Add(historyItem);
+            await _db.SaveChangesAsync();
+
+            // ... your code to generate the assistant response, etc.
+
+            return RedirectToAction("Index", new { /* … */ });
+        }
         private async Task<string> GetOpenAiResponse(string userInput, ApplicationUser appUser)
         {
             var client = _httpClientFactory.CreateClient("OpenAI");

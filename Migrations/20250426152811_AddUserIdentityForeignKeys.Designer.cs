@@ -12,8 +12,8 @@ using db_query_v1._0._0._1.Data;
 namespace db_query_v1._0._0._1.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250425222315_AddSpecializationToUsers")]
-    partial class AddSpecializationToUsers
+    [Migration("20250426152811_AddUserIdentityForeignKeys")]
+    partial class AddUserIdentityForeignKeys
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,6 +158,62 @@ namespace db_query_v1._0._0._1.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Models.ChatHistoryItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserIdentityId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserIdentityId");
+
+                    b.ToTable("ChatHistoryItems");
+                });
+
+            modelBuilder.Entity("Models.PreviousChat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserIdentityId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserIdentityId");
+
+                    b.ToTable("PreviousChats");
+                });
+
             modelBuilder.Entity("db_query_v1._0._0._1.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -236,7 +292,7 @@ namespace db_query_v1._0._0._1.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Specialization")
+                    b.Property<string>("Specializations")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -259,6 +315,30 @@ namespace db_query_v1._0._0._1.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("db_query_v1._0._0._1.Models.ChatResponseLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ChatResponseLogs");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -310,6 +390,31 @@ namespace db_query_v1._0._0._1.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Models.ChatHistoryItem", b =>
+                {
+                    b.HasOne("db_query_v1._0._0._1.Models.ApplicationUser", null)
+                        .WithMany("ChatHistory")
+                        .HasForeignKey("UserIdentityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Models.PreviousChat", b =>
+                {
+                    b.HasOne("db_query_v1._0._0._1.Models.ApplicationUser", null)
+                        .WithMany("PreviousChats")
+                        .HasForeignKey("UserIdentityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("db_query_v1._0._0._1.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("ChatHistory");
+
+                    b.Navigation("PreviousChats");
                 });
 #pragma warning restore 612, 618
         }
