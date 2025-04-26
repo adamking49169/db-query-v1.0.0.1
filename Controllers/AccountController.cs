@@ -90,6 +90,91 @@ namespace db_query_v1._0._0._1.Controllers
             return View(model);
         }
 
+        // GET: /Account/Settings
+        [HttpGet]
+        public async Task<IActionResult> Settings()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Challenge();
+
+            // TODO: create a SettingsViewModel to populate with user data
+            var model = new SettingsViewModel
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Phone = user.Phone,
+                Address = user.Address,
+                DateOfBirth = user.DateOfBirth,
+                Specializations = user.Specializations?.Split(',') ?? Array.Empty<string>()
+            };
+
+            return View(model);
+        }
+
+        // POST: /Account/Settings
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Settings(SettingsViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Challenge();
+
+            // Update user fields
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.Phone = model.Phone;
+            user.Address = model.Address;
+            user.DateOfBirth = model.DateOfBirth;
+            user.Specializations = string.Join(",", model.Specializations);
+
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Your settings have been saved.";
+                return RedirectToAction(nameof(Settings));
+            }
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
+
+            return View(model);
+        }
+
+        // GET: /Account/Upgrade
+        [HttpGet]
+        public IActionResult Upgrade()
+        {
+            // TODO: build an UpgradeViewModel with your plan/pricing info
+            var model = new UpgradeViewModel
+            {
+                CurrentPlan = "Free",
+                AvailablePlans = new[] { "Pro", "Enterprise" }
+            };
+            return View(model);
+        }
+
+        // POST: /Account/Upgrade
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Upgrade(UpgradeViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            // TODO: implement your payment/subscription logic here...
+            // e.g. call your billing service, then update user's plan in the database
+
+            // On success:
+            TempData["SuccessMessage"] = $"Upgraded to {model.SelectedPlan} successfully!";
+            return RedirectToAction(nameof(Upgrade));
+        }
+
         // POST: /Account/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]

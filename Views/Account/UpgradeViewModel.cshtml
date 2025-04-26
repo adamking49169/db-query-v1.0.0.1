@@ -1,0 +1,47 @@
+﻿// Views/Account/Upgrade.cshtml
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model db_query_v1._0._0._1.Models.UpgradeViewModel
+
+@{
+    ViewData["Title"] = "Upgrade Plan";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    @TempData["SuccessMessage"]
+}
+
+<div class="mb-3">
+    <label asp-for="CurrentPlan" class="form-label"></label>
+    <input asp-for="CurrentPlan" class="form-control" readonly />
+</div>
+
+<div class="mb-3">
+    <label asp-for="SelectedPlan" class="form-label"></label>
+    <select asp-for="SelectedPlan" asp-items="new SelectList(Model.AvailablePlans)" class="form-select">
+        <option value="">-- Select a Plan --</option>
+    </select>
+    <span asp-validation-for="SelectedPlan" class="text-danger"></span>
+</div>
+
+<button type="submit" class="btn btn-success">Upgrade</button>
+
+<div class="mb-3">
+    <label asp-for="CurrentPlan" class="form-label"></label>
+    <input asp-for="CurrentPlan" class="form-control" readonly />
+</div>
+
+<div class="mb-3">
+    <label asp-for="SelectedPlan" class="form-label"></label>
+    <select asp-for="SelectedPlan" asp-items="new SelectList(Model.AvailablePlans)" class="form-select">
+        <option value="">-- Select a Plan --</option>
+    </select>
+    <span asp-validation-for="SelectedPlan" class="text-danger"></span>
+</div>
+
+<button type="submit" class="btn btn-success">Upgrade</button>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
