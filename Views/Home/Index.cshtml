@@ -1,0 +1,102 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Home Page";
+    var user = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+}
+
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .hero-full {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: url('/images/bg.jpg') no-repeat center center fixed;
+        background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    }
+
+    .hero-content {
+        backdrop-filter: blur(6px);
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 2rem 3rem;
+        border-radius: 1rem;
+        max-width: 800px;
+        text-align: center;
+        margin: 1rem;
+    }
+
+    .user-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 2px solid white;
+        object-fit: cover;
+    }
+
+    .user-avatar-topright {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+
+    .logo {
+        max-width: 500px;
+        height: auto;
+        margin-bottom: 2rem;
+    }
+</style>
+
+<div class="hero-full">
+
+    @if (user != null)
+    {
+        <img src="https://ui-avatars.com/api/?name=@user.FirstName+@user.LastName&background=0D8ABC&color=fff"
+             alt="Avatar"
+             class="user-avatar user-avatar-topright" />
+    }
+
+    <div class="hero-content">
+
+        <!-- Logo centered -->
+        <a asp-controller="Home" asp-action="Index" style="display: block; margin: 0 auto;">
+            <img src="~/images/asklytics-logo.png" alt="Asklytics Logo" class="logo" style="height: 500px; width: auto;" />
+        </a>
+
+        @if (user != null)
+        {
+            <h1 class="display-5 fw-bold mb-3">Welcome back, @user.FirstName!</h1>
+            <p class="lead mb-4">Let’s get back to building something amazing.</p>
+            <a class="btn btn-outline-light btn-lg" asp-controller="Chat" asp-action="ChatWithData">
+                Go to Dashboard
+            </a>
+        }
+        else
+        {
+            <h1 class="display-4 fw-bold mb-3">Welcome to Asklytics</h1>
+            <p class="lead mb-4">
+                <strong>Login or Register below</strong>
+            </p>
+
+            <div class="d-flex justify-content-center gap-3">
+                <a class="btn btn-outline-light btn-lg" asp-controller="Account" asp-action="Login">Login</a>
+                <a class="btn btn-primary btn-lg" asp-controller="Account" asp-action="Register">Register</a>
+            </div>
+        }
+    </div>
+
+</div>

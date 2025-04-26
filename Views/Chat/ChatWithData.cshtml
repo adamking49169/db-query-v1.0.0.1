@@ -1,0 +1,234 @@
+﻿@using Models
+@model ChatModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Chat With Data";
+}
+
+<style>
+    /* Login page base styling */
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #eef2f7;
+    }
+
+    .auth-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: url('/images/bg.jpg') no-repeat center center fixed;
+        background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        overflow: auto;
+    }
+
+    .auth-card {
+        backdrop-filter: blur(10px);
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 1.5rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        padding: 4rem 3rem;
+        max-width: 800px;
+        width: 100%;
+        animation: fadeIn 0.4s ease;
+    }
+
+    keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Chat page specific layout */
+    .container {
+        display: flex;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .sidebar {
+        width: 25%;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .main-content {
+        width: 75%;
+    }
+
+    .history-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background-color: #f4f4f4;
+        border-radius: 0.5rem;
+        cursor: pointer;
+    }
+
+    /* Preserve chat bubble styling */
+    .chat-history {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #f4f4f4;
+        border-radius: 0.5rem;
+        max-height: 300px;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+    }
+
+    .chat-message {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .chat-bubble {
+        padding: 1rem;
+        border-radius: 1rem;
+        max-width: 80%;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        word-wrap: break-word;
+    }
+
+    .user-message {
+        align-self: flex-end;
+        background-color: #d1e7dd;
+        color: #0f5132;
+        text-align: right;
+    }
+
+    .assistant-message {
+        align-self: flex-start;
+        background-color: #e2e3e5;
+        color: #41464b;
+        text-align: left;
+    }
+
+    .chat-meta {
+        font-size: 0.75rem;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        background-color: #ccc;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: 1rem;
+    }
+
+    .avatar.user { background-color: #198754; }
+    .avatar.assistant { background-color: #0d6efd; }
+</style>
+
+<div class="auth-bg">
+    <div class="auth-card container">
+
+        <!-- Sidebar for Previous Chat History -->
+        <div class="sidebar">
+            <h3>Previous Chats</h3>
+            @if (Model.PreviousChats?.Any() == true)
+            {
+                foreach (var prevChat in Model.PreviousChats)
+                {
+                    <div class="history-item">
+                        @prevChat.Title (@prevChat.Date.ToLocalTime().ToString("d"))
+                    </div>
+                }
+            }
+            else
+            {
+                <div>No previous chats available.</div>
+            }
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h2>Chat With Data</h2>
+
+            <form method="post" asp-action="ChatWithData" asp-controller="Chat">
+                <textarea name="UserInput" placeholder="Ask a question..." required></textarea>
+
+                @if (Model.ChatHistory != null && Model.ChatHistory.Any())
+                {
+                    for (var i = 0; i < Model.ChatHistory.Count; i++)
+                    {
+                        <input type="hidden" name="ChatHistory[@i].Role" value="@Model.ChatHistory[i].Role" />
+                        <input type="hidden" name="ChatHistory[@i].Content" value="@Model.ChatHistory[i].Content" />
+                        <input type="hidden" name="ChatHistory[@i].Timestamp" value="@Model.ChatHistory[i].Timestamp.ToString("o")" />
+                    }
+                }
+                <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill">Send</button>
+            </form>
+
+            @if (Model.ChatHistory?.Any() == true)
+            {
+                <h3>Chat History</h3>
+                <div class="chat-history" id="chatScrollArea">
+                    @foreach (var item in Model.ChatHistory)
+                    {
+                        var isUser = item.Role?.ToLower() == "user" || item.Role == User.Identity?.Name;
+                        <div class="chat-message">
+                            <div class="avatar @(isUser ? "user" : "assistant")">
+                                @(isUser ? "U" : "A")
+                            </div>
+                            <div class="chat-bubble @(isUser ? "user-message" : "assistant-message")">
+                                <span>@item.Content</span>
+                                <div class="chat-meta">
+                                    @item.Role • @item.Timestamp.ToLocalTime().ToString("g")
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (Model.Data?.Any() == true)
+            {
+                <h3>Data Output</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Column</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data)
+                        {
+                            <tr>
+                                <td>@row.ColumnName</td>
+                                <td>@row.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    const chatBox = document.getElementById("chatScrollArea");
+    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+</script>
