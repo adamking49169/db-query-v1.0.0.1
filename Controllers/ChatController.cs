@@ -185,44 +185,54 @@ namespace YourNamespace.Controllers
             Console.WriteLine($"API Request Count: {_apiRequestCount}");
 
             // Build specialization prompt
-            var raw = appUser?.Specializations ?? string.Empty;
-            var specs = raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
-            var system = specs.Any()
+            var specs = (appUser?.Specializations ?? string.Empty)
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                            .ToList();
+
+            var systemMessage = specs.Any()
                 ? $"You are an expert in: {string.Join(", ", specs)}. Only answer within these areas."
                 : "You are a helpful assistant.";
 
-            var body = new
+            var requestBody = new
             {
-                model = "gpt-4o",
+                model = "gpt-4o-mini",
                 messages = new[]
                 {
-                    new { role = "system", content = system },
-                    new { role = "user", content = userInput }
-                },
+            new { role = "system", content = systemMessage },
+            new { role = "user", content = userInput }
+        },
                 max_tokens = 500,
                 temperature = 0.4,
                 top_p = 0.9,
                 frequency_penalty = 0.2
             };
 
-            for (int i = 0; i < 3; i++)
+            for (int attempt = 1; attempt <= 3; attempt++)
             {
                 try
                 {
-                    var resp = await client.PostAsJsonAsync("v1/chat/completions", body);
+                    var response = await client.PostAsJsonAsync("/v1/chat/completions", requestBody);
 
-                    if (resp.IsSuccessStatusCode)
+                    if (response.IsSuccessStatusCode)
                     {
-                        var result = await resp.Content.ReadFromJsonAsync<OpenAiChatResponse>();
-                        return result?.Choices.FirstOrDefault()?.Message.Content.Trim() ?? string.Empty;
+                        var openAiResponse = await response.Content.ReadFromJsonAsync<OpenAiChatResponse>();
+                        return openAiResponse?.Choices.FirstOrDefault()?.Message.Content.Trim() ?? "No response content.";
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Attempt {attempt}: OpenAI API responded with status code {response.StatusCode}");
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    await Task.Delay(1000);
+                    Console.WriteLine($"Attempt {attempt}: Exception occurred - {ex.Message}");
                 }
+
+                await Task.Delay(1000);
             }
-            return "Error generating response.";
+
+            return "Error generating response after multiple attempts.";
         }
+
     }
-}
+    }

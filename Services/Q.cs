@@ -35,8 +35,7 @@ public class Q : IDisposable
 
     private void SetupApiKey()
     {
-        //_apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-        _apiKey = "sk-proj-TQTlyjvM1QCZskEB4sCtT3BlbkFJmJxQLcOt1pOBPTpX9W1X";
+        _apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
         if (string.IsNullOrEmpty(_apiKey))
         {
             throw new InvalidOperationException("OPENAI_API_KEY not found in environment variables");

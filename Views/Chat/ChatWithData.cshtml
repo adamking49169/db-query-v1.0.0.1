@@ -345,7 +345,7 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    max-height: 600px;
+    max-height: 435px;
     overflow-y: auto;
 }
 
@@ -513,7 +513,7 @@ html, body {
                         @if (p.Assistant != null)
                         {
                             <li class="chat-message">
-                                <div class="avatar assistant">A</div>
+                                <img src="/images/navbar-brand.png" alt="User Avatar" class="avatar user" style="object-fit: cover; width: 36px; height: 36px; padding: 2px;" />
                                 <div class="chat-bubble assistant-message">
                                     <span>@p.Assistant.Content</span>
                                     <div class="chat-meta">@p.Assistant.Role • @p.Assistant.Timestamp.ToLocalTime().ToString("g")</div>
