@@ -47,6 +47,5 @@ namespace db_query_v1._0._0._1.Models
 
         public virtual ApplicationUser IdentityUser { get; set; }
 
-        // …whatever other fields you need
     }
 }

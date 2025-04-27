@@ -4,6 +4,8 @@
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Chat With Data";
+    var user = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+
 }
 
 <style>
@@ -16,6 +18,209 @@ html, body {
     background-color: #eef2f7;
     overflow: hidden;
 }
+
+
+    .hero-full {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: url('/images/bg.jpg') no-repeat center center fixed;
+        background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    }
+
+    .hero-content {
+        backdrop-filter: blur(6px);
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 2rem 3rem;
+        border-radius: 1rem;
+        max-width: 800px;
+        text-align: center;
+        margin: 1rem;
+    }
+
+    .user-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 2px solid white;
+        object-fit: cover;
+    }
+
+    .user-avatar-topright {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+
+    .logo {
+        max-width: 500px;
+        height: auto;
+        margin-bottom: 2rem;
+    }
+
+    /* position & stacking */
+    .dropdown.user-avatar-topright {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1100;
+    }
+
+    /* avatar styling & hover */
+    .user-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.8);
+        object-fit: cover;
+        transition: transform 0.2s, border-color 0.2s;
+        cursor: pointer;
+    }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+            border-color: #fff;
+        }
+
+    /* glass-style dropdown panel */
+    .dropdown-menu {
+        background: rgba(0, 0, 0, 0.5); /* semi‐transparent dark */
+        backdrop-filter: blur(12px); /* glassmorphism blur */
+        border: none;
+        border-radius: 0.75rem;
+        padding: 0.5rem 0;
+        min-width: 220px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    /* menu items */
+    .dropdown-item {
+        color: rgba(255,255,255,0.8);
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: background 0.2s, color 0.2s;
+    }
+
+        .dropdown-item:hover,
+        .dropdown-item:focus {
+            color: #fff; /* make text pure white */
+            background: rgba(255,255,255,0.1);
+        }
+
+    /* subtle divider */
+    .dropdown-divider {
+        margin: 0.5rem 0;
+        border-top: 1px solid rgba(255,255,255,0.2);
+    }
+
+
+    .hero-full {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: url('/images/bg.jpg') no-repeat center center fixed;
+        background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    }
+
+    .hero-content {
+        backdrop-filter: blur(6px);
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 2rem 3rem;
+        border-radius: 1rem;
+        max-width: 800px;
+        text-align: center;
+        margin: 1rem;
+    }
+
+    .user-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 2px solid white;
+        object-fit: cover;
+    }
+
+    .user-avatar-topright {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+
+    .logo {
+        max-width: 500px;
+        height: auto;
+        margin-bottom: 2rem;
+    }
+
+    /* position & stacking */
+    .dropdown.user-avatar-topright {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1100;
+    }
+
+    /* avatar styling & hover */
+    .user-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.8);
+        object-fit: cover;
+        transition: transform 0.2s, border-color 0.2s;
+        cursor: pointer;
+    }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+            border-color: #fff;
+        }
+
+    /* glass-style dropdown panel */
+    .dropdown-menu {
+        background: rgba(0, 0, 0, 0.5); /* semi‐transparent dark */
+        backdrop-filter: blur(12px); /* glassmorphism blur */
+        border: none;
+        border-radius: 0.75rem;
+        padding: 0.5rem 0;
+        min-width: 220px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    /* menu items */
+    .dropdown-item {
+        color: rgba(255,255,255,0.8);
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: background 0.2s, color 0.2s;
+    }
+
+        .dropdown-item:hover,
+        .dropdown-item:focus {
+            color: #fff; /* make text pure white */
+            background: rgba(255,255,255,0.1);
+        }
+
+    /* subtle divider */
+    .dropdown-divider {
+        margin: 0.5rem 0;
+        border-top: 1px solid rgba(255,255,255,0.2);
+    }
+
 
 .auth-bg {
     position: fixed;
@@ -216,6 +421,27 @@ html, body {
 }
 .table th { background-color: #f8f9fa; }
 </style>
+
+@if (user != null)
+{
+    <div class="dropdown user-avatar-topright">
+        <a href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="https://ui-avatars.com/api/?name=@user.FirstName+@user.LastName&background=0D8ABC&color=fff"
+                 alt="Avatar"
+                 class="user-avatar" />
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="@Url.Action("Settings","Account")">Settings</a></li>
+            <li><a class="dropdown-item" href="@Url.Action("Upgrade","Account")">Upgrade Plan</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                    <button type="submit" class="dropdown-item">Log out</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+}
 
 <div class="auth-bg">
     <div class="auth-card container">

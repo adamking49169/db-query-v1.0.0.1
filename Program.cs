@@ -22,7 +22,11 @@ namespace db_query_v1._0._0._1
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
+            builder.Services
+      .AddDefaultIdentity<ApplicationUser>(opts => opts.SignIn.RequireConfirmedAccount = false)
+      .AddEntityFrameworkStores<ApplicationDbContext>();
+
+
 
             // OpenAI HttpClient
             var openAiKey = builder.Configuration["OpenAI:ApiKey"];

@@ -1,6 +1,7 @@
 ﻿using db_query_v1._0._0._1.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace db_query_v1._0._0._1.Controllers
 {
@@ -29,16 +30,19 @@ namespace db_query_v1._0._0._1.Controllers
                 var user = new ApplicationUser
                 {
                     UserName = model.Email,
+                    NormalizedUserName = _userManager.NormalizeName(model.Email),
                     Email = model.Email,
+                    NormalizedEmail = _userManager.NormalizeEmail(model.Email),
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     DateOfBirth = model.DateOfBirth,
-                    Gender = "", // Optional field — adjust if needed
+                    Gender = "",
                     Phone = "",
                     Address = model.Address,
                     CreatedAt = DateTime.UtcNow,
                     IsActive = true,
-                    Specializations = string.Join(",", model.Specializations)
+                    Specializations = string.Join(",", model.Specializations),
+                    EmailConfirmed = true, // Set to true for testing purposes
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -77,12 +81,48 @@ namespace db_query_v1._0._0._1.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
 
-                if (result.Succeeded)
+
+                //var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                //var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+
+                if (user != null)
                 {
-                    return RedirectToAction("Index", "Home");
+                    // Optionally: check email confirmation up-front
+                    if (!await _userManager.IsEmailConfirmedAsync(user))
+                    {
+                        ModelState.AddModelError("", "You need to confirm your email before you can log in.");
+                        return View(model);
+                    }
+
+                    var result = await _signInManager.PasswordSignInAsync(
+                        user.UserName,
+                        model.Password,
+                        model.RememberMe,
+                        lockoutOnFailure: true);
+
+                    if (result.Succeeded)
+                        return RedirectToAction("Index", "Home");
+
+                    if (result.IsLockedOut)
+                        ModelState.AddModelError("", "Your account is locked out.");
+                    else if (result.IsNotAllowed)
+                        ModelState.AddModelError("", "Login not allowed. Make sure your email is confirmed.");
+                    else if (result.RequiresTwoFactor)
+                        return RedirectToAction("LoginWith2fa", new { model.RememberMe });
+                    else
+                        ModelState.AddModelError("", "Invalid password.");
                 }
+                else
+                {
+                    ModelState.AddModelError("", "No account found with this email.");
+                }
+
+
+
+
 
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             }

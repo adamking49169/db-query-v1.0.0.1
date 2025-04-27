@@ -1,47 +1,255 @@
-﻿// Views/Account/Upgrade.cshtml
-@using Microsoft.AspNetCore.Mvc.Rendering
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
 @model db_query_v1._0._0._1.Models.UpgradeViewModel
 
 @{
     ViewData["Title"] = "Upgrade Plan";
+    var user = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+
 }
 
-@if (TempData["SuccessMessage"] != null)
-{
-    @TempData["SuccessMessage"]
-}
-
-<div class="mb-3">
-    <label asp-for="CurrentPlan" class="form-label"></label>
-    <input asp-for="CurrentPlan" class="form-control" readonly />
-</div>
-
-<div class="mb-3">
-    <label asp-for="SelectedPlan" class="form-label"></label>
-    <select asp-for="SelectedPlan" asp-items="new SelectList(Model.AvailablePlans)" class="form-select">
-        <option value="">-- Select a Plan --</option>
-    </select>
-    <span asp-validation-for="SelectedPlan" class="text-danger"></span>
-</div>
-
-<button type="submit" class="btn btn-success">Upgrade</button>
-
-<div class="mb-3">
-    <label asp-for="CurrentPlan" class="form-label"></label>
-    <input asp-for="CurrentPlan" class="form-control" readonly />
-</div>
-
-<div class="mb-3">
-    <label asp-for="SelectedPlan" class="form-label"></label>
-    <select asp-for="SelectedPlan" asp-items="new SelectList(Model.AvailablePlans)" class="form-select">
-        <option value="">-- Select a Plan --</option>
-    </select>
-    <span asp-validation-for="SelectedPlan" class="text-danger"></span>
-</div>
-
-<button type="submit" class="btn btn-success">Upgrade</button>
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #eef2f7;
     }
+
+    .hero-full {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: url('/images/bg.jpg') no-repeat center center fixed;
+        background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    }
+
+    .hero-content {
+        backdrop-filter: blur(6px);
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 2rem 3rem;
+        border-radius: 1rem;
+        max-width: 800px;
+        text-align: center;
+        margin: 1rem;
+    }
+
+    .user-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 2px solid white;
+        object-fit: cover;
+    }
+
+    .user-avatar-topright {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+
+    .logo {
+        max-width: 500px;
+        height: auto;
+        margin-bottom: 2rem;
+    }
+
+    /* position & stacking */
+    .dropdown.user-avatar-topright {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1100;
+    }
+
+    /* avatar styling & hover */
+    .user-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.8);
+        object-fit: cover;
+        transition: transform 0.2s, border-color 0.2s;
+        cursor: pointer;
+    }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+            border-color: #fff;
+        }
+
+    /* glass-style dropdown panel */
+    .dropdown-menu {
+        background: rgba(0, 0, 0, 0.5); /* semi‐transparent dark */
+        backdrop-filter: blur(12px); /* glassmorphism blur */
+        border: none;
+        border-radius: 0.75rem;
+        padding: 0.5rem 0;
+        min-width: 220px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    /* menu items */
+    .dropdown-item {
+        color: rgba(255,255,255,0.8);
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: background 0.2s, color 0.2s;
+    }
+
+        .dropdown-item:hover,
+        .dropdown-item:focus {
+            color: #fff; /* make text pure white */
+            background: rgba(255,255,255,0.1);
+        }
+
+    /* subtle divider */
+    .dropdown-divider {
+        margin: 0.5rem 0;
+        border-top: 1px solid rgba(255,255,255,0.2);
+    }
+
+
+
+    .auth-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: url('/images/bg.jpg') no-repeat center center fixed;
+        background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+    }
+
+    .auth-card {
+        backdrop-filter: blur(10px);
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 1.5rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        padding: 4rem 3rem;
+        max-width: 600px;
+        width: 100%;
+        animation: fadeIn 0.4s ease;
+    }
+
+    keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-floating input,
+    .form-floating select {
+        border-radius: 0.75rem !important;
+        padding: 1.2rem 1rem;
+        font-size: 1.1rem;
+        border: 1px solid #ced4da;
+        background-color: #fff;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-floating input:focus,
+    .form-floating select:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.25);
+    }
+
+    .form-floating label {
+        padding-left: 0.75rem;
+        font-size: 0.95rem;
+        color: #495057;
+    }
+
+    .btn-success {
+        background-color: #16a34a;
+        border: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        padding: 0.85rem 1rem;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .btn-success:hover {
+        background-color: #13803b;
+        transform: scale(1.02);
+    }
+</style>
+
+@if (user != null)
+{
+    <div class="dropdown user-avatar-topright">
+        <a href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="https://ui-avatars.com/api/?name=@user.FirstName+@user.LastName&background=0D8ABC&color=fff"
+                 alt="Avatar"
+                 class="user-avatar" />
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="@Url.Action("Settings","Account")">Settings</a></li>
+            <li><a class="dropdown-item" href="@Url.Action("Upgrade","Account")">Upgrade Plan</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                    <button type="submit" class="dropdown-item">Log out</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+}
+
+<div class="auth-bg">
+    <div class="auth-card">
+        <h3 class="text-center mb-4">Upgrade Your Plan</h3>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+
+        <form asp-action="UpgradePlan" method="post" novalidate>
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="CurrentPlan" class="form-control" placeholder="Current Plan" readonly />
+                <label asp-for="CurrentPlan"></label>
+            </div>
+
+            <div class="form-floating mb-3">
+                <select asp-for="SelectedPlan"
+                        asp-items="new SelectList(Model.AvailablePlans)"
+                        class="form-select">
+                    <option value="">-- Select a Plan --</option>
+                </select>
+                <label asp-for="SelectedPlan"></label>
+                <span asp-validation-for="SelectedPlan" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 py-2 rounded-pill">Upgrade</button>
+
+            <div class="text-center mt-3 small">
+                <a asp-action="Index" asp-controller="Home">Back to Home</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }
