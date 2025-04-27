@@ -1,10 +1,8 @@
-﻿@using Microsoft.AspNetCore.Mvc.Rendering
-@model db_query_v1._0._0._1.Models.UpgradeViewModel
-
+﻿@model db_query_v1._0._0._1.Models.UpgradeViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
 @{
     ViewData["Title"] = "Upgrade Plan";
     var user = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
-
 }
 
 <style>
@@ -118,8 +116,6 @@
         border-top: 1px solid rgba(255,255,255,0.2);
     }
 
-
-
     .auth-bg {
         position: fixed;
         top: 0;
@@ -156,6 +152,16 @@
         }
     }
 
+    h3 {
+        font-weight: 700;
+        font-size: 2rem;
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .form-floating {
+        position: relative;
+    }
     .form-floating input,
     .form-floating select {
         border-radius: 0.75rem !important;
@@ -166,13 +172,11 @@
         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
         transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
-
     .form-floating input:focus,
     .form-floating select:focus {
         border-color: #80bdff;
         box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.25);
     }
-
     .form-floating label {
         padding-left: 0.75rem;
         font-size: 0.95rem;
@@ -180,7 +184,7 @@
     }
 
     .btn-success {
-        background-color: #16a34a;
+        background-color: #2563eb;
         border: none;
         font-weight: 600;
         font-size: 1.1rem;
@@ -188,50 +192,59 @@
         transition: background-color 0.3s ease, transform 0.2s ease;
     }
     .btn-success:hover {
-        background-color: #13803b;
+        background-color: #1e50c3;
         transform: scale(1.02);
+    }
+
+    .rounded-pill {
+        border-radius: 50rem;
+
     }
 </style>
 
-@if (user != null)
-{
-    <div class="dropdown user-avatar-topright">
-        <a href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="https://ui-avatars.com/api/?name=@user.FirstName+@user.LastName&background=0D8ABC&color=fff"
-                 alt="Avatar"
-                 class="user-avatar" />
-        </a>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="@Url.Action("Settings","Account")">Settings</a></li>
-            <li><a class="dropdown-item" href="@Url.Action("Upgrade","Account")">Upgrade Plan</a></li>
-            <li><hr class="dropdown-divider" /></li>
-            <li>
-                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
-                    <button type="submit" class="dropdown-item">Log out</button>
-                </form>
-            </li>
-        </ul>
-    </div>
-}
+<div class="auth-bg hero-full">
 
-<div class="auth-bg">
+    @if (user != null)
+    {
+        <div class="dropdown user-avatar-topright">
+            <a href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="https://ui-avatars.com/api/?name=@user.FirstName+@user.LastName&background=0D8ABC&color=fff"
+                     alt="Avatar"
+                     class="user-avatar" />
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="@Url.Action("Settings","Account")">Settings</a></li>
+                <li><a class="dropdown-item" href="@Url.Action("Upgrade","Account")">Upgrade Plan</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                        <button type="submit" class="dropdown-item">Log out</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    }
+
+
     <div class="auth-card">
-        <h3 class="text-center mb-4">Upgrade Your Plan</h3>
+        <h3>Upgrade Your Plan</h3>
 
         @if (TempData["SuccessMessage"] != null)
         {
-            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
         }
 
-        <form asp-action="UpgradePlan" method="post" novalidate>
-            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+        <form asp-action="Upgrade" method="post" novalidate>
+            @Html.AntiForgeryToken()
 
             <div class="form-floating mb-3">
-                <input asp-for="CurrentPlan" class="form-control" placeholder="Current Plan" readonly />
+                <input asp-for="CurrentPlan" class="form-control" readonly placeholder="Current Plan" />
                 <label asp-for="CurrentPlan"></label>
             </div>
 
-            <div class="form-floating mb-3">
+            <div class="form-floating mb-4">
                 <select asp-for="SelectedPlan"
                         asp-items="new SelectList(Model.AvailablePlans)"
                         class="form-select">
@@ -241,15 +254,15 @@
                 <span asp-validation-for="SelectedPlan" class="text-danger small"></span>
             </div>
 
-            <button type="submit" class="btn btn-success w-100 py-2 rounded-pill">Upgrade</button>
-
-            <div class="text-center mt-3 small">
-                <a asp-action="Index" asp-controller="Home">Back to Home</a>
-            </div>
+            <button type="submit" class="btn btn-success w-100 py-2 rounded-pill">
+                Upgrade
+            </button>
         </form>
     </div>
 </div>
 
 @section Scripts {
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

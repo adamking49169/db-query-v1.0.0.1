@@ -8,13 +8,10 @@ namespace db_query_v1._0._0._1.Models
         [Display(Name = "Current Plan")]
         public string CurrentPlan { get; set; }
 
-        [Display(Name = "Available Plans")]
-        public string[] AvailablePlans { get; set; } = Array.Empty<string>();
-
-        [Required]
-        [Display(Name = "Select Plan")]
+        [Required(ErrorMessage = "Please select a plan to upgrade to.")]
+        [Display(Name = "New Plan")]
         public string SelectedPlan { get; set; }
+
+        public IEnumerable<string> AvailablePlans { get; set; }
     }
-
-
 }

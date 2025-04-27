@@ -1,6 +1,8 @@
-﻿// Views/Account/Upgrade.cshtml
-@using Microsoft.AspNetCore.Mvc.Rendering
+﻿@using System.Collections.Generic;
+@using System.ComponentModel.DataAnnotations;
+@using Microsoft.AspNetCore.Mvc.Rendering;
 @model db_query_v1._0._0._1.Models.UpgradeViewModel
+
 
 @{
     ViewData["Title"] = "Upgrade Plan";
@@ -10,6 +12,8 @@
 {
     @TempData["SuccessMessage"]
 }
+
+
 
 <div class="mb-3">
     <label asp-for="CurrentPlan" class="form-label"></label>

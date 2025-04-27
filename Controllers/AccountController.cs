@@ -2,18 +2,23 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using db_query_v1._0._0._1.Services;
 
 namespace db_query_v1._0._0._1.Controllers
 {
     public class AccountController : Controller
     {
+         private readonly IPlanService _planService;
+        private readonly IUserService _userService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IPlanService planService, IUserService userService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _planService = planService;
+            _userService = userService;
         }
 
         // GET: /Account/Register
@@ -186,34 +191,46 @@ namespace db_query_v1._0._0._1.Controllers
             return View(model);
         }
 
+        
+
         // GET: /Account/Upgrade
         [HttpGet]
         public IActionResult Upgrade()
         {
-            // TODO: build an UpgradeViewModel with your plan/pricing info
-            var model = new UpgradeViewModel
+            var userId = User.Identity.Name; // or however you get your user
+            var vm = new UpgradeViewModel
             {
-                CurrentPlan = "Free",
-                AvailablePlans = new[] { "Pro", "Enterprise" }
+                CurrentPlan = _userService.GetCurrentPlan(userId),
+                AvailablePlans = _planService.GetAllPlanNames()
             };
-            return View(model);
+
+            return View(vm);
         }
 
         // POST: /Account/Upgrade
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Upgrade(UpgradeViewModel model)
+        public IActionResult Upgrade(UpgradeViewModel model)
         {
+            // repopulate the list if we need to redisplay
+            model.AvailablePlans = _planService.GetAllPlanNames();
+
             if (!ModelState.IsValid)
+            {
                 return View(model);
+            }
 
-            // TODO: implement your payment/subscription logic here...
-            // e.g. call your billing service, then update user's plan in the database
+            var userId = User.Identity.Name;
+            _userService.UpgradePlan(userId, model.SelectedPlan);
 
-            // On success:
-            TempData["SuccessMessage"] = $"Upgraded to {model.SelectedPlan} successfully!";
+            TempData["SuccessMessage"] =
+                $"🎉 Your plan has been upgraded to “{model.SelectedPlan}”!";
+
+            // PRG pattern—redirect back to GET so refresh won’t repost
             return RedirectToAction(nameof(Upgrade));
         }
+
+      
 
         // POST: /Account/Logout
         [HttpPost]
