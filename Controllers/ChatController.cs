@@ -43,7 +43,7 @@ namespace YourNamespace.Controllers
                 PreviousChats = _db.PreviousChats
                     .OrderByDescending(pc => pc.Date)
                     .Take(10)
-                    .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date })
+                    .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date, UserIdentityId =pc.UserIdentityId })
                     .ToList()
             };
 
@@ -92,12 +92,14 @@ namespace YourNamespace.Controllers
             var summaryTitle = model.UserInput.Length > 50
                 ? model.UserInput[..50] + "..."
                 : model.UserInput;
-            _db.PreviousChats.Add(new PreviousChat
+         
+            var previousChatEntry = new PreviousChat
             {
                 UserIdentityId = userId,
                 Title = summaryTitle,
                 Date = DateTime.UtcNow
-            });
+            };
+            _db.PreviousChats.Add(previousChatEntry);
 
             // 6. Save messaging and summary
             await _db.SaveChangesAsync();
@@ -113,7 +115,7 @@ namespace YourNamespace.Controllers
             model.PreviousChats = _db.PreviousChats
                 .OrderByDescending(pc => pc.Date)
                 .Take(10)
-                .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date })
+                .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date, UserIdentityId = userId })
                 .ToList();
 
             // 9. Populate model.Data only if valid SELECT query
