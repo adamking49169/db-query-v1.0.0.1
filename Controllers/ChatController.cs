@@ -10,6 +10,7 @@ using Models;
 using Microsoft.Data.SqlClient;
 using db_query_v1._0._0._1.Data;
 using Microsoft.AspNetCore.Authorization;
+using db_query_v1._9_0._0_1.DataProcessing;
 
 namespace YourNamespace.Controllers
 {
@@ -30,6 +31,46 @@ namespace YourNamespace.Controllers
             _db = db;
         }
 
+        public IActionResult DataProcessing()
+        {
+            var dataProcessor = new DataProcessor();
+            string filePath = "Data/titanic.csv";
+
+            // Get the processed data from the method (now returns List<DataRow>)
+            var processedData = dataProcessor.ProcessCsvData(filePath);
+
+            // Create the ChatModel and assign the data
+            var chatModel = new ChatModel
+            {
+                Data = processedData
+            };
+
+            return View("ChatWithData", chatModel);  // Pass the model to the view
+        }
+
+        public IActionResult QueryData(string userInput)
+        {
+            var dataProcessor = new DataProcessor();
+            string filePath = "Data/titanic.csv";
+
+            // Get the processed data
+            var processedData = dataProcessor.ProcessCsvData(filePath);
+
+            // Query the data based on user input
+            var filteredData = processedData
+                .Where(row => row.ColumnName.Contains(userInput, StringComparison.OrdinalIgnoreCase) ||
+                              row.Value.Contains(userInput, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var chatModel = new ChatModel
+            {
+                Data = filteredData,
+                UserInput = userInput
+            };
+
+            return View("ChatWithData", chatModel);  // Render the updated data
+        }
+
         [HttpGet]
         public IActionResult ChatWithData()
         {
@@ -43,7 +84,7 @@ namespace YourNamespace.Controllers
                 PreviousChats = _db.PreviousChats
                     .OrderByDescending(pc => pc.Date)
                     .Take(10)
-                    .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date, UserIdentityId =pc.UserIdentityId })
+                    .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date, UserIdentityId = pc.UserIdentityId })
                     .ToList()
             };
 
@@ -92,7 +133,7 @@ namespace YourNamespace.Controllers
             var summaryTitle = model.UserInput.Length > 50
                 ? model.UserInput[..50] + "..."
                 : model.UserInput;
-         
+
             var previousChatEntry = new PreviousChat
             {
                 UserIdentityId = userId,
@@ -113,10 +154,11 @@ namespace YourNamespace.Controllers
 
             // 8. Reload previous chats
             model.PreviousChats = _db.PreviousChats
-                .OrderByDescending(pc => pc.Date)
-                .Take(10)
-                .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date, UserIdentityId = userId })
-                .ToList();
+       .Where(pc => pc.UserIdentityId == userId)  // Filter by UserIdentityId
+       .OrderByDescending(pc => pc.Date)  // Order by Date in descending order
+       .Take(10)  // Take the top 10 results
+       .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date, UserIdentityId = pc.UserIdentityId })  // Project to PreviousChat
+       .ToList();
 
             // 9. Populate model.Data only if valid SELECT query
             model.Data = new List<DataRow>();
@@ -237,4 +279,4 @@ namespace YourNamespace.Controllers
         }
 
     }
-    }
+}

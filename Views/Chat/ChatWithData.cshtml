@@ -13,14 +13,23 @@
         height: 100%;
         width: 100%;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #eef2f7;
+        background-color: #212121;
         overflow: hidden;
     }
 
+    h3 {
+        color: #977DBF;
+        text-align: center; 
+        margin: 0 auto; 
+        display: block; 
+    }
+
     .input-container {
-        display: flex;
+        display: inherit;
         align-items: center;
         gap: 0.5rem;
+        margin-left: 10px;
+        border-radius: 0.1rem; /* Reduced rounding */
     }
 
     .hero-full {
@@ -242,7 +251,7 @@
 
     .auth-card {
         backdrop-filter: blur(10px);
-        background-color: rgba(255, 255, 255, 0.95);
+        background-color: rgba(33,33,33,255); 
         border-radius: 1.5rem;
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
         padding: 3rem 2rem;
@@ -257,33 +266,49 @@
                 } */
 
     .container {
+        min-height: 700px;
         display: flex;
         gap: 1.5rem;
+        background-color: #171717;
     }
 
     .sidebar {
         width: 25%;
         max-height: 70vh;
-        overflow-y: auto;
+        overflow-y: auto; /* Enables vertical scrolling */
+        background-color: #292A2D;
+        border-radius: 1rem;
+        align-items: center;
+        scrollbar-width: none; /* Hides the scrollbar in Firefox */
+        -ms-overflow-style: none; /* Hides the scrollbar in Internet Explorer/Edge */
     }
 
+        .sidebar::-webkit-scrollbar {
+            display: none; /* Hides the scrollbar in Webkit-based browsers (Chrome, Safari) */
+        }
+
+
     .history-item {
+        background-color: #3a3b3d; /* Slightly darker gray background */
+        color: white; /* Light text color for contrast */
         padding: 0.75rem;
         margin-bottom: 0.5rem;
-        background-color: #f4f4f4;
         border-radius: 0.5rem;
         cursor: pointer;
         transition: background 0.2s;
+        margin: 1rem;
     }
 
         .history-item:hover {
-            background-color: #e2e3e5;
+            background-color: #4a4b4d;
         }
 
     .main-content {
-        width: 75%;
+        width: 80%;
         display: flex;
         flex-direction: column;
+        background-color: #292A2D;
+        border-radius: 1rem;
     }
 
     .chat-header {
@@ -291,6 +316,7 @@
         font-size: 1.75rem;
         font-weight: 700;
         margin-bottom: 1.5rem;
+        color: #977DBF;
     }
 
     .chat-input {
@@ -300,11 +326,11 @@
     }
 
     button.send-button {
-        padding: 1.25rem;
-        height: 100px; /* Keep the height the same */
-        width: 15%; /* Width is twice the height */
+        padding: 1rem;
+        height: 70px;
+        width: 30%;
         border: none;
-        border-radius: 1rem;
+        border-radius: 1rem; 
         background: linear-gradient(90deg, #0066ff, #0099ff);
         color: #fff;
         font-weight: 600;
@@ -314,7 +340,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-right:1rem;
     }
+
+
+
 
         button.send-button:hover {
             background-color: #1e50c3;
@@ -323,7 +353,7 @@
 
     textarea {
         width: 70%; /* Adjust the width to be smaller */
-        height: 100px;
+        height: 70px;
         border: none;
         border-radius: 1rem;
         padding: 1.25rem;
@@ -334,14 +364,17 @@
         transition: box-shadow 0.3s, background-color 0.3s;
     }
 
+
     .chat-input textarea {
+        background-color: #e1e1e6; /* Slightly darker gray */
+        color: #41464b; /* Dark text color */
+    
         width: 100%;
-        height: 100px;
+        height: 70px;
         border: none;
         border-radius: 1rem;
         padding: 1.25rem;
         font-size: 1.125rem;
-        background-color: #f9fafb;
         box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.06);
         resize: vertical;
         transition: box-shadow 0.3s, background-color 0.3s;
@@ -351,6 +384,7 @@
             outline: none;
             background-color: #ffffff;
             box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+            margin-left: 10px;
         }
 
         .chat-input textarea::placeholder {
@@ -362,7 +396,7 @@
         padding: 0.75rem;
         background: linear-gradient(90deg, #0066ff, #0099ff);
         border: none;
-        border-radius: 50rem;
+        border-radius: 1rem;
         color: #fff;
         font-weight: 600;
         font-size: 1rem;
@@ -498,6 +532,50 @@
         </ul>
     </div>
 }
+<
+@*     method="get" asp-action="DataProcessing" asp-controller="Chat">
+    <button type="submit" class="btn btn-primary">Process Data</button>
+@if (Model.Data?.Any() == true)
+{
+    <div class="chat-history-header">Data Output</div>
+    <table class="table">
+        <thead>
+            <tr><th>Column</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Data)
+            {
+                <tr><td>@row.ColumnName</td><td>@row.Value</td></tr>
+            }
+        </tbody>
+    </table>
+}
+
+<form method="get" asp-action="QueryData" asp-controller="Chat">
+    <textarea id="UserInput" name="userInput" placeholder="Ask a question..." required></textarea>
+    <button type="submit" class="send-button">Query Data</button>
+</form>
+
+@if (Model.Data != null && Model.Data.Any())
+{
+    <div class="chat-history-header">Data Output</div>
+    <table class="table">
+        <thead>
+            <tr><th>Column</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Data)
+            {
+                <tr><td>@row.ColumnName</td><td>@row.Value</td></tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No matching data found.</p>
+} *@
+
 
 <div class="auth-bg">
     <div class="auth-card container">

@@ -187,11 +187,13 @@
             <div class="form-group mb-3">
                 <label asp-for="Specializations" class="control-label"></label>
                 <select asp-for="Specializations" class="form-control" multiple id="specializations-select">
+                    <option value="Sport">Sport</option>
                     <option value="Law">Law</option>
                     <option value="Finance">Finance</option>
                     <option value="Tech">Tech</option>
                     <option value="Education">Education</option>
                     <option value="Healthcare">Healthcare</option>
+                    <option value="Construction">Construction</option>
                 </select>
                 <span asp-validation-for="Specializations" class="text-danger small"></span>
             </div>

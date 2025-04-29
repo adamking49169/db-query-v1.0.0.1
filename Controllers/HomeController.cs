@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using db_query_v1._0._0._1.Models;
+using db_query_v1._9_0._0_1.DataProcessing;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 
@@ -15,6 +16,23 @@ namespace db_query_v1._0._0._1.Controllers
             _logger = logger;
             _q = q;
         }
+
+        public IActionResult DataProcessing()
+        {
+            var dataProcessor = new DataProcessor();
+            string filePath = "Data/titanic.csv";
+
+            // Get the processed data from the method (now returns List<DataRow>)
+            var processedData = dataProcessor.ProcessCsvData(filePath);
+
+            // Create the ChatModel and assign the data
+            var chatModel = new ChatModel
+            {
+                Data = processedData
+            };
+
+            return View("Index", chatModel);
+        }// Pass the model to the view
 
         public IActionResult Index()
         {
