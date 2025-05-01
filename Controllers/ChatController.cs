@@ -11,10 +11,8 @@ using Microsoft.Data.SqlClient;
 using db_query_v1._0._0._1.Data;
 using Microsoft.AspNetCore.Authorization;
 using db_query_v1._9_0._0_1.DataProcessing;
-using Newtonsoft.Json;
-using System.Text;
 
-namespace db_query_v1._0._0._1.Controllers
+namespace YourNamespace.Controllers
 {
     public class ChatController : Controller
     {
@@ -110,7 +108,7 @@ namespace db_query_v1._0._0._1.Controllers
             _db.ChatHistoryItems.Add(userMessage);
 
             // 2. Get AI response
-            var response = await GetOpenAiResponseStreamed(model.UserInput, user);
+            var response = await GetOpenAiResponse(model.UserInput, user);
 
             // 3. Persist assistant message
             var assistantHistoryItem = new ChatHistoryItem
@@ -224,60 +222,61 @@ namespace db_query_v1._0._0._1.Controllers
 
             return RedirectToAction("Index", new { /* … */ });
         }
-        private async Task<string> GetOpenAiResponseStreamed(string userInput, ApplicationUser appUser)
+        private async Task<string> GetOpenAiResponse(string userInput, ApplicationUser appUser)
         {
             var client = _httpClientFactory.CreateClient("OpenAI");
+            _apiRequestCount++;
+            Console.WriteLine($"API Request Count: {_apiRequestCount}");
 
-            // Build your system message as before...
-            var specs = (appUser?.Specializations ?? "")
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            // Build specialization prompt
+            var specs = (appUser?.Specializations ?? string.Empty)
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                            .ToList();
+
             var systemMessage = specs.Any()
                 ? $"You are an expert in: {string.Join(", ", specs)}. Only answer within these areas."
                 : "You are a helpful assistant.";
 
             var requestBody = new
             {
-                model = "gpt-3.5-turbo",
+                model = "gpt-4o-mini",
                 messages = new[]
                 {
             new { role = "system", content = systemMessage },
-            new { role = "user",   content = userInput }
+            new { role = "user", content = userInput }
         },
-                max_tokens = 300,
+                max_tokens = 500,
                 temperature = 0.4,
-                stream = true
+                top_p = 0.9,
+                frequency_penalty = 0.2
             };
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/v1/chat/completions")
+            for (int attempt = 1; attempt <= 3; attempt++)
             {
-                Content = JsonContent.Create(requestBody)
-            };
-            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
+                try
+                {
+                    var response = await client.PostAsJsonAsync("/v1/chat/completions", requestBody);
 
-            var sb = new StringBuilder();
-            using var stream = await response.Content.ReadAsStreamAsync();
-            using var reader = new StreamReader(stream);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var openAiResponse = await response.Content.ReadFromJsonAsync<OpenAiChatResponse>();
+                        return openAiResponse?.Choices.FirstOrDefault()?.Message.Content.Trim() ?? "No response content.";
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Attempt {attempt}: OpenAI API responded with status code {response.StatusCode}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Attempt {attempt}: Exception occurred - {ex.Message}");
+                }
 
-            while (!reader.EndOfStream)
-            {
-                var line = await reader.ReadLineAsync();
-                if (string.IsNullOrWhiteSpace(line) || !line.StartsWith("data: "))
-                    continue;
-                var json = line["data: ".Length..];
-                if (json.Trim() == "[DONE]")
-                    break;
-
-                // You'll need a small DTO for the chunk shape:
-                // class ChoiceDelta { public string content; }
-                // class OpenAiStreamChunk { public ChoiceDelta[] choices; }
-                var chunk = JsonConvert.DeserializeObject<OpenAiStreamChunk>(json);
-                sb.Append(chunk.Choices[0].Delta.Content);
+                await Task.Delay(1000);
             }
 
-            return sb.ToString();
+            return "Error generating response after multiple attempts.";
         }
-
 
     }
 }
