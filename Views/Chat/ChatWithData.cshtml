@@ -414,6 +414,7 @@
         font-weight: 600;
         margin: 2rem 0 1rem;
         text-align: center;
+        color: #977DBF;
     }
 
     .chat-history {
@@ -533,48 +534,6 @@
     </div>
 }
 <
-@*     method="get" asp-action="DataProcessing" asp-controller="Chat">
-    <button type="submit" class="btn btn-primary">Process Data</button>
-@if (Model.Data?.Any() == true)
-{
-    <div class="chat-history-header">Data Output</div>
-    <table class="table">
-        <thead>
-            <tr><th>Column</th><th>Value</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var row in Model.Data)
-            {
-                <tr><td>@row.ColumnName</td><td>@row.Value</td></tr>
-            }
-        </tbody>
-    </table>
-}
-
-<form method="get" asp-action="QueryData" asp-controller="Chat">
-    <textarea id="UserInput" name="userInput" placeholder="Ask a question..." required></textarea>
-    <button type="submit" class="send-button">Query Data</button>
-</form>
-
-@if (Model.Data != null && Model.Data.Any())
-{
-    <div class="chat-history-header">Data Output</div>
-    <table class="table">
-        <thead>
-            <tr><th>Column</th><th>Value</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var row in Model.Data)
-            {
-                <tr><td>@row.ColumnName</td><td>@row.Value</td></tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>No matching data found.</p>
-} *@
 
 
 <div class="auth-bg">

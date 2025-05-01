@@ -125,10 +125,6 @@ namespace db_query_v1._0._0._1.Controllers
                     ModelState.AddModelError("", "No account found with this email.");
                 }
 
-
-
-
-
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             }
 
