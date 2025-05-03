@@ -1,6 +1,7 @@
 ﻿using db_query_v1._0._0._1.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using db_query_v1._0._0._1.Services;
 
 namespace db_query_v1._0._0._1.Controllers
@@ -57,7 +58,7 @@ namespace db_query_v1._0._0._1.Controllers
                     // Optional: Add a TempData message for a success flash message
                     TempData["SuccessMessage"] = $"Welcome, {user.FirstName}!";
 
-                    return RedirectToAction("ChatWithData", "Chat");
+                    return RedirectToAction("Index", "Home");
                 }
 
                 foreach (var error in result.Errors)
@@ -85,6 +86,8 @@ namespace db_query_v1._0._0._1.Controllers
         {
             if (ModelState.IsValid)
             {
+
+
                 //var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
 
                 var user = await _userManager.FindByEmailAsync(model.Email);
@@ -106,7 +109,7 @@ namespace db_query_v1._0._0._1.Controllers
                         lockoutOnFailure: true);
 
                     if (result.Succeeded)
-                        return RedirectToAction("ChatWithData", "Chat");
+                        return RedirectToAction("Index", "Home");
 
                     if (result.IsLockedOut)
                         ModelState.AddModelError("", "Your account is locked out.");
