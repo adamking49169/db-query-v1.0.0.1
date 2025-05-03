@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using db_query_v1._9_0._0_1.DataProcessing;
 using Newtonsoft.Json;
 using System.Text;
+using static db_query_v1._0._0._1.Data.ApplicationDbContext;
 
 namespace db_query_v1._0._0._1.Controllers
 {
@@ -36,7 +37,7 @@ namespace db_query_v1._0._0._1.Controllers
         public IActionResult DataProcessing()
         {
             var dataProcessor = new DataProcessor();
-            string filePath = "Data/titanic.csv";
+            string filePath = @"C:\Users\adam\source\repos\db-query-v1.0.0.1\Data\titanic.csv"; // Full path to the CSV file
 
             // Get the processed data from the method (now returns List<DataRow>)
             var processedData = dataProcessor.ProcessCsvData(filePath);
@@ -50,10 +51,11 @@ namespace db_query_v1._0._0._1.Controllers
             return View("ChatWithData", chatModel);  // Pass the model to the view
         }
 
+
         public IActionResult QueryData(string userInput)
         {
             var dataProcessor = new DataProcessor();
-            string filePath = "Data/titanic.csv";
+            string filePath = @"C:\Users\adam\source\repos\db-query-v1.0.0.1\Data\titanic.csv"; // Full path to the CSV file
 
             // Get the processed data
             var processedData = dataProcessor.ProcessCsvData(filePath);
@@ -72,6 +74,7 @@ namespace db_query_v1._0._0._1.Controllers
 
             return View("ChatWithData", chatModel);  // Render the updated data
         }
+
 
         [HttpGet]
         public IActionResult ChatWithData()
@@ -228,12 +231,27 @@ namespace db_query_v1._0._0._1.Controllers
         {
             var client = _httpClientFactory.CreateClient("OpenAI");
 
-            // Build your system message as before...
+            // Read and process Titanic CSV data if Data Analytics specialization is detected
             var specs = (appUser?.Specializations ?? "")
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            var systemMessage = specs.Any()
-                ? $"You are an expert in: {string.Join(", ", specs)}. Only answer within these areas."
-                : "You are a helpful assistant.";
+
+            var systemMessage = "";
+
+            if (specs.Contains("Data Analytics"))
+            {
+                // Read and process Titanic data
+                var titanicData = TitanicCsvReader.ReadTitanicCsv(@"C:\Users\adam\source\repos\db-query-v1.0.0.1\Data\titanic.csv");
+
+                systemMessage = "You are a Data Consultant working with a Data Analyst. You will receive a CSV file and use it to answer the user's question. " +
+                                "You must decide how to use the data to answer the user's question. Format the output and plot the data to maximize readability. " +
+                                "Use appropriate units, and ensure the output is user-friendly.";
+            }
+            else
+            {
+                systemMessage = specs.Any()
+                    ? $"You are an expert in: {string.Join(", ", specs)}. Only answer within these areas."
+                    : "You are a helpful assistant.";
+            }
 
             var requestBody = new
             {
@@ -241,7 +259,7 @@ namespace db_query_v1._0._0._1.Controllers
                 messages = new[]
                 {
             new { role = "system", content = systemMessage },
-            new { role = "user",   content = userInput }
+            new { role = "user", content = userInput }
         },
                 max_tokens = 300,
                 temperature = 0.4,
@@ -268,15 +286,13 @@ namespace db_query_v1._0._0._1.Controllers
                 if (json.Trim() == "[DONE]")
                     break;
 
-                // You'll need a small DTO for the chunk shape:
-                // class ChoiceDelta { public string content; }
-                // class OpenAiStreamChunk { public ChoiceDelta[] choices; }
                 var chunk = JsonConvert.DeserializeObject<OpenAiStreamChunk>(json);
                 sb.Append(chunk.Choices[0].Delta.Content);
             }
 
             return sb.ToString();
         }
+
 
 
     }
