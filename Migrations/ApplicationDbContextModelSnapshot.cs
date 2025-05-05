@@ -167,7 +167,14 @@ namespace db_query_v1._0._0._1.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ChatId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -176,13 +183,17 @@ namespace db_query_v1._0._0._1.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("UserIdentityId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChatId");
 
                     b.HasIndex("UserIdentityId");
 
@@ -415,20 +426,32 @@ namespace db_query_v1._0._0._1.Migrations
 
             modelBuilder.Entity("Models.ChatHistoryItem", b =>
                 {
-                    b.HasOne("db_query_v1._0._0._1.Models.ApplicationUser", null)
+                    b.HasOne("Models.PreviousChat", "PreviousChat")
+                        .WithMany("ChatHistoryItems")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("db_query_v1._0._0._1.Models.ApplicationUser", "User")
                         .WithMany("ChatHistory")
                         .HasForeignKey("UserIdentityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("PreviousChat");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Models.PreviousChat", b =>
                 {
-                    b.HasOne("db_query_v1._0._0._1.Models.ApplicationUser", null)
+                    b.HasOne("db_query_v1._0._0._1.Models.ApplicationUser", "User")
                         .WithMany("PreviousChats")
                         .HasForeignKey("UserIdentityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("db_query_v1._0._0._1.Models.UserProfile", b =>
@@ -440,6 +463,11 @@ namespace db_query_v1._0._0._1.Migrations
                         .IsRequired();
 
                     b.Navigation("IdentityUser");
+                });
+
+            modelBuilder.Entity("Models.PreviousChat", b =>
+                {
+                    b.Navigation("ChatHistoryItems");
                 });
 
             modelBuilder.Entity("db_query_v1._0._0._1.Models.ApplicationUser", b =>

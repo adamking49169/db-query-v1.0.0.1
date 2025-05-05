@@ -10,7 +10,6 @@ using Models;
 using Microsoft.Data.SqlClient;
 using db_query_v1._0._0._1.Data;
 using Microsoft.AspNetCore.Authorization;
-using db_query_v1._9_0._0_1.DataProcessing;
 using Newtonsoft.Json;
 using System.Text;
 using static db_query_v1._0._0._1.Data.ApplicationDbContext;
@@ -34,45 +33,106 @@ namespace db_query_v1._0._0._1.Controllers
             _db = db;
         }
 
-        public IActionResult DataProcessing()
+        private  List<PreviousChat> ChatSummaries()
         {
-            var dataProcessor = new DataProcessor();
-            string filePath = @"C:\Users\adam\source\repos\db-query-v1.0.0.1\Data\titanic.csv"; // Full path to the CSV file
+            return _db.PreviousChats
+                .OrderByDescending(c => c.Date)
+                .Select(c => new PreviousChat
+                {
+                    Title = c.Title,
+                    Date = c.Date,
+                    UserIdentityId = c.UserIdentityId,
+                    Id = c.Id
+                })
+                .ToList();
+        }
 
-            // Get the processed data from the method (now returns List<DataRow>)
-            var processedData = dataProcessor.ProcessCsvData(filePath);
+        private Dictionary<int, List<ChatHistoryItem>> ChatHistories()
+        {
+            var chatHistories = _db.ChatHistoryItems
+                .Include(c => c.PreviousChat)  // Ensure we get the related PreviousChat data
+                .OrderBy(c => c.Timestamp)     // Sort messages by timestamp
+                .ToList();
 
-            // Create the ChatModel and assign the data
-            var chatModel = new ChatModel
-            {
-                Data = processedData
-            };
+            // Group chat history items by ChatId
+            var groupedHistories = chatHistories
+                .GroupBy(c => c.ChatId)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.ToList()
+                );
 
-            return View("ChatWithData", chatModel);  // Pass the model to the view
+            return groupedHistories;
         }
 
 
-        public IActionResult QueryData(string userInput)
+
+        // ③ Show the list of previous chats
+        public IActionResult Index()
         {
-            var dataProcessor = new DataProcessor();
-            string filePath = @"C:\Users\adam\source\repos\db-query-v1.0.0.1\Data\titanic.csv"; // Full path to the CSV file
-
-            // Get the processed data
-            var processedData = dataProcessor.ProcessCsvData(filePath);
-
-            // Query the data based on user input
-            var filteredData = processedData
-                .Where(row => row.ColumnName.Contains(userInput, StringComparison.OrdinalIgnoreCase) ||
-                              row.Value.Contains(userInput, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            var chatModel = new ChatModel
+            var model = new ChatModel
             {
-                Data = filteredData,
-                UserInput = userInput
+                PreviousChats = ChatSummaries() // Call the method using parentheses to invoke it
+                                                .OrderByDescending(c => c.Date)
+                                                .ToList()
+            };
+            return View(model);
+        }
+
+        // ④ View one chat (full history) on its own page
+        [HttpGet]
+        public async Task<IActionResult> ViewChat(int id)
+        {
+            // 1. Get current user
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            // 2. Load the requested PreviousChat + its history, ensure it belongs to this user
+            var previousChat = await _db.PreviousChats
+                .Include(pc => pc.ChatHistoryItems)
+                .FirstOrDefaultAsync(pc =>
+                    pc.Id == id &&
+                    pc.UserIdentityId == user.Id
+                );
+
+            if (previousChat == null)
+                return NotFound();
+
+            // 3. Build the same ChatModel that ChatWithData expects
+            var model = new ChatModel
+            {
+                // Sort history oldest→newest
+                ChatHistory = previousChat.ChatHistoryItems
+                                           .OrderBy(c => c.Timestamp)
+                                           .ToList(),
+
+                // No ad-hoc SQL when simply viewing
+                Data = new List<DataRow>(),
+
+                // Sidebar: latest 10 sessions
+                PreviousChats = await _db.PreviousChats
+                    .Where(pc => pc.UserIdentityId == user.Id)
+                    .OrderByDescending(pc => pc.Date)
+                    .Take(10)
+                    .ToListAsync()
             };
 
-            return View("ChatWithData", chatModel);  // Render the updated data
+            // 4. Render the ChatWithData.cshtml view
+            return View("ChatWithData", model);
+        }
+
+        // ⑤ AJAX endpoint to fetch one chat’s partial
+        public IActionResult GetChat(int id)
+        {
+            if (!ChatHistories().TryGetValue(id, out var messages))
+                return PartialView("_NotFound");
+
+            var model = new ChatModel
+            {
+                ChatHistory = messages,
+                Data = new List<DataRow>()
+            };
+            return PartialView("_ChatDetails", model);
         }
 
 
@@ -89,7 +149,7 @@ namespace db_query_v1._0._0._1.Controllers
                 PreviousChats = _db.PreviousChats
                     .OrderByDescending(pc => pc.Date)
                     .Take(10)
-                    .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date, UserIdentityId = pc.UserIdentityId })
+                    .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date, UserIdentityId = pc.UserIdentityId, Id = pc.Id })
                     .ToList()
             };
 
@@ -99,46 +159,16 @@ namespace db_query_v1._0._0._1.Controllers
         [HttpPost]
         public async Task<IActionResult> ChatWithData(ChatModel model)
         {
+            // Get current user
             var user = await _userManager.GetUserAsync(User);
-
             var userId = _userManager.GetUserId(User);
 
-            var userMessage = new ChatHistoryItem
-            {
-                UserIdentityId = userId,
-                Role = "user",
-                Content = model.UserInput,
-                Timestamp = DateTime.UtcNow
-            };
-            _db.ChatHistoryItems.Add(userMessage);
-
-            // 2. Get AI response
-            var response = await GetOpenAiResponseStreamed(model.UserInput, user);
-
-            // 3. Persist assistant message
-            var assistantHistoryItem = new ChatHistoryItem
-            {
-                UserIdentityId = userId,
-                Role = "assistant",
-                Content = response,
-                Timestamp = DateTime.UtcNow
-            };
-            _db.ChatHistoryItems.Add(assistantHistoryItem);
-
-            // 4. Log to ChatResponseLog
-            var logEntry = new ChatResponseLog
-            {
-                Role = assistantHistoryItem.Role,
-                Content = assistantHistoryItem.Content,
-                Timestamp = assistantHistoryItem.Timestamp
-            };
-            _db.ChatResponseLogs.Add(logEntry);
-
-            // 5. Add session summary
+            // Build a summary title for this session
             var summaryTitle = model.UserInput.Length > 50
                 ? model.UserInput[..50] + "..."
                 : model.UserInput;
 
+            // Create and track the session (PreviousChat) _before_ the messages
             var previousChatEntry = new PreviousChat
             {
                 UserIdentityId = userId,
@@ -147,25 +177,43 @@ namespace db_query_v1._0._0._1.Controllers
             };
             _db.PreviousChats.Add(previousChatEntry);
 
-            // 6. Save messaging and summary
-            await _db.SaveChangesAsync();
+            // Create and track the user's message, linking to the session
+            var userMessage = new ChatHistoryItem
+            {
+                UserIdentityId = userId,
+                PreviousChat = previousChatEntry,  // <-- EF will set ChatId for us
+                Role = "user",
+                Content = model.UserInput,
+                Timestamp = DateTime.UtcNow,
+                ImageUrl = ""
+            };
+            _db.ChatHistoryItems.Add(userMessage);
 
-            // 7. Rebuild history in model
-            model.ChatHistory ??= new List<ChatHistoryItem>();
-            model.ChatHistory.Add(userMessage);
-            model.ChatHistory.Add(assistantHistoryItem);
-            if (model.ChatHistory.Count > 20)
-                model.ChatHistory = model.ChatHistory.Skip(model.ChatHistory.Count - 20).ToList();
+            // Fetch the AI response
+            var aiResponse = await GetOpenAiResponseStreamed(model.UserInput, user);
 
-            // 8. Reload previous chats
-            model.PreviousChats = _db.PreviousChats
-       .Where(pc => pc.UserIdentityId == userId)  // Filter by UserIdentityId
-       .OrderByDescending(pc => pc.Date)  // Order by Date in descending order
-       .Take(10)  // Take the top 10 results
-       .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date, UserIdentityId = pc.UserIdentityId })  // Project to PreviousChat
-       .ToList();
+            // Create and track the assistant's reply, also linked to the same session
+            var assistantMessage = new ChatHistoryItem
+            {
+                UserIdentityId = userId,
+                PreviousChat = previousChatEntry,
+                Role = "assistant",
+                Content = aiResponse,
+                Timestamp = DateTime.UtcNow,
+                ImageUrl = ""
+            };
+            _db.ChatHistoryItems.Add(assistantMessage);
 
-            // 9. Populate model.Data only if valid SELECT query
+            // Log the assistant reply to ChatResponseLog (unchanged)
+            var logEntry = new ChatResponseLog
+            {
+                Role = assistantMessage.Role,
+                Content = assistantMessage.Content,
+                Timestamp = assistantMessage.Timestamp
+            };
+            _db.ChatResponseLogs.Add(logEntry);
+
+            // Optionally run a SELECT and populate model.Data
             model.Data = new List<DataRow>();
             var sql = model.UserInput?.Trim();
             if (!string.IsNullOrEmpty(sql) && sql.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
@@ -192,46 +240,37 @@ namespace db_query_v1._0._0._1.Controllers
                 }
                 catch (SqlException ex)
                 {
-                    // Log or add model error
                     ModelState.AddModelError("Data", "SQL error: " + ex.Message);
                 }
             }
 
-            return View(model);
-        }
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> SendMessage(ChatModel model)
-        {
-            if (!ModelState.IsValid)
-                return View(model);
-
-            // 1) Get the current user's Id
-            var userId = _userManager.GetUserId(User);
-            // Alternatively: var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // 2) Create & populate the ChatHistoryItem
-            var historyItem = new ChatHistoryItem
-            {
-                UserIdentityId = userId,         // ← THIS is _required_
-                Role = "user",
-                Content = model.UserInput,
-                Timestamp = DateTime.UtcNow
-            };
-
-            // 3) Save it
-            _db.ChatHistoryItems.Add(historyItem);
+            // Commit all of the above in one shot
             await _db.SaveChangesAsync();
 
-            // ... your code to generate the assistant response, etc.
+            // Rebuild the in-memory history for the view
+            model.ChatHistory ??= new List<ChatHistoryItem>();
+            model.ChatHistory.Add(userMessage);
+            model.ChatHistory.Add(assistantMessage);
+            if (model.ChatHistory.Count > 20)
+                model.ChatHistory = model.ChatHistory
+                                     .Skip(model.ChatHistory.Count - 20)
+                                     .ToList();
 
-            return RedirectToAction("Index", new { /* … */ });
+            // Reload the list of recent sessions
+            model.PreviousChats = _db.PreviousChats
+                .Where(pc => pc.UserIdentityId == userId)
+                .OrderByDescending(pc => pc.Date)
+                .Take(10)
+                .ToList();  // you can project if you need only Title/Date
+
+            return View(model);
         }
+
+       
         private async Task<string> GetOpenAiResponseStreamed(string userInput, ApplicationUser appUser)
         {
             var client = _httpClientFactory.CreateClient("OpenAI");
 
-            // Read and process Titanic CSV data if Data Analytics specialization is detected
             var specs = (appUser?.Specializations ?? "")
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
@@ -239,8 +278,6 @@ namespace db_query_v1._0._0._1.Controllers
 
             if (specs.Contains("Data Analytics"))
             {
-                // Read and process Titanic data
-                var titanicData = TitanicCsvReader.ReadTitanicCsv(@"C:\Users\adam\source\repos\db-query-v1.0.0.1\Data\titanic.csv");
 
                 systemMessage = "You are a Data Consultant working with a Data Analyst. You will receive a CSV file and use it to answer the user's question. " +
                                 "You must decide how to use the data to answer the user's question. Format the output and plot the data to maximize readability. " +
@@ -255,13 +292,13 @@ namespace db_query_v1._0._0._1.Controllers
 
             var requestBody = new
             {
-                model = "gpt-3.5-turbo",
+                model = "gpt-4o-mini",
                 messages = new[]
                 {
             new { role = "system", content = systemMessage },
             new { role = "user", content = userInput }
-        },
-                max_tokens = 300,
+         },
+                max_tokens = 500,
                 temperature = 0.4,
                 stream = true
             };

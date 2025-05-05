@@ -25,6 +25,14 @@
         margin-top: 20px;
     }
 
+    .assistant-image img {
+        width: 120px;
+        height: auto;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        margin-top: .5rem;
+    }
+
 
     h3 {
         color: #977DBF;
@@ -39,6 +47,16 @@
         gap: 0.5rem;
         margin-left: 10px;
         border-radius: 0.1rem; /* Reduced rounding */
+    }
+
+    .assistant-image img {
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .assistant-image {
+        margin-top: 0.5rem;
+        text-align: center;
     }
 
     .hero-full {
@@ -270,9 +288,9 @@
     }
 
     /* keyframes fadeIn {
-                        from { opacity: 0; transform: translateY(20px); }
-                        to   { opacity: 1; transform: translateY(0); }
-                    } */
+                                        from { opacity: 0; transform: translateY(20px); }
+                                        to   { opacity: 1; transform: translateY(0); }
+                                    } */
 
     .container {
         min-height: 700px;
@@ -542,8 +560,6 @@
         </ul>
     </div>
 }
-<
-
 
 <div class="auth-bg">
     <div class="auth-card container">
@@ -555,9 +571,9 @@
                 .Where(prev => prev.UserIdentityId == user.Id)
                 .ToList();
 
-                foreach (var prevChat in currentUsersPreviousChats)
+                @foreach (var prevChat in currentUsersPreviousChats)
                 {
-                    <div class="history-item">
+                    <div class="history-item" onclick="openPreviousChat(@prevChat.Id)">
                         @prevChat.Title (@prevChat.Date.ToLocalTime().ToString("d"))
                     </div>
                 }
@@ -625,7 +641,6 @@
                 <div class="chat-history-header">Chat History</div>
                 <ul class="chat-history">
                     @{
-                        // ① Build pairs of (user, assistant)
                         var pairs = Model.ChatHistory
                         .Select((msg, idx) => new { msg, idx })
                         .GroupBy(x => x.idx / 2)
@@ -636,35 +651,56 @@
                         })
                         .ToList();
 
-                        // ② Reverse so newest pair is first
                         pairs.Reverse();
                     }
 
                     @foreach (var p in pairs)
                     {
+                        <!-- User message -->
                         <li class="chat-message">
                             <div class="avatar user">U</div>
                             <div class="chat-bubble user-message">
                                 <span>@p.User.Content</span>
-                                <div class="chat-meta">@p.User.Role • @p.User.Timestamp.ToLocalTime().ToString("g")</div>
+                                <div class="chat-meta">
+                                    @p.User.Role • @p.User.Timestamp.ToLocalTime().ToString("g")
+                                </div>
                             </div>
                         </li>
 
                         @if (p.Assistant != null)
                         {
+                            <!-- Assistant message -->
                             <li class="chat-message">
-                                <img src="/images/navbar-brand.png" alt="User Avatar" class="avatar user" style="object-fit: cover; width: 36px; height: 36px; padding: 2px;" />
+                                <img src="/images/navbar-brand.png"
+                                     alt="Assistant Avatar"
+                                     class="avatar assistant" />
+
                                 <div class="chat-bubble assistant-message">
                                     <span>@p.Assistant.Content</span>
-                                    <div class="chat-meta">@p.Assistant.Role • @p.Assistant.Timestamp.ToLocalTime().ToString("g")</div>
+
+
+                                    @if (!string.IsNullOrWhiteSpace(p.Assistant.ImageUrl))
+                                    {
+                                        <div class="assistant-image">
+                                            <img src="@p.Assistant.ImageUrl" alt="Assistant sent image" />
+                                        </div>
+                                    }
+
+
+                                    <div class="chat-meta">
+                                        @p.Assistant.Role • @p.Assistant.Timestamp.ToLocalTime().ToString("g")
+                                    </div>
                                 </div>
                             </li>
                         }
 
-                        <li class="separator"><hr class="chat-separator" /></li>
+                        <li class="separator">
+                            <hr class="chat-separator" />
+                        </li>
                     }
                 </ul>
             }
+
 
             @if (Model.Data?.Any() == true)
             {
@@ -693,4 +729,11 @@
             document.querySelector('.send-button').click(); // Trigger click on Send button
         }
     });
+</script>
+<script>
+    function openPreviousChat(chatId) {
+        // You can use AJAX to fetch chat data or simply navigate to another view.
+        // For demonstration, we will redirect to a URL with the chatId.
+        window.location.href = '@Url.Action("ViewChat", "Chat")?id=' + chatId;
+    }
 </script>
