@@ -1,206 +1,42 @@
-﻿/* ---------------------------------------------------
-   Responsive Adjustments
-   --------------------------------------------------- */
 
-/* Ensure images in your card never overflow */
-.auth-card img {
-    max-width: 100%;
-    height: auto;
-}
 
-/* Medium desktops / small laptops (≤992px) */
-@media (max-width: 992px) {
-    .auth-card {
-        padding: 3rem 2rem;
-        max-width: 500px;
-    }
-}
-
-/* Tablets and large phones (≤768px) */
-@media (max-width: 768px) {
-    /* Make the fixed bg scrollable on smaller devices */
-    .auth-background {
-        background-attachment: scroll;
-    }
-
-    .auth-card {
-        padding: 2.5rem 1.5rem;
-        max-width: 90%;
-        border-radius: 1.25rem;
-    }
-
-    /* Slightly smaller base font */
-    html {
-        font-size: 14px; /* your default is already 14, so this keeps it consistent */
-    }
-
-    /* Tweak primary buttons */
-    .btn {
-        font-size: 0.95rem;
-        padding: 0.65rem 1rem;
-    }
-}
-
-/* Mobile phones (≤576px) */
-@media (max-width: 576px) {
-    html {
-        font-size: 13px;
-    }
-
-    body {
-        margin-bottom: 50px; /* a bit less bottom margin to fit smaller screens */
-    }
-
-    .auth-card {
-        padding: 2rem 1rem;
-        max-width: 100%;
-        border-radius: 1rem;
-    }
-
-    .btn {
-        font-size: 0.85rem;
-        padding: 0.5rem 0.8rem;
-        width: 100%; /* full-width buttons on mobile */
-        box-sizing: border-box;
-    }
-}
-/* base */
-.logo {
-    display: block;
-    margin: 0 auto;
-    width: 50%; /* logo will be 50% of its container */
-    max-width: 500px; /* but never wider than 500px */
-    height: auto; /* maintain aspect ratio */
-}
-
-/* Tablets and small laptops */
-@media (max-width: 992px) {
-    .logo {
-        width: 60%;
-        max-width: 400px;
-    }
-}
-
-/* Portrait tablets / large phones */
-@media (max-width: 768px) {
-    .logo {
-        width: 70%;
-        max-width: 300px;
-    }
-}
-
-/* Mobile phones */
-@media (max-width: 576px) {
-    .logo {
-        width: 80%;
-        max-width: 200px;
-    }
-}
-
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-}
-
-.hero-full {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
+.auth-background {
     background: url('/images/bg.jpg') no-repeat center center fixed;
     background-size: cover;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
 }
 
-.hero-content {
-    backdrop-filter: blur(6px);
-    background-color: rgba(0, 0, 0, 0.6);
-    padding: 2rem 3rem;
-    border-radius: 1rem;
-    max-width: 800px;
-    text-align: center;
-    margin: 1rem;
+
+.auth-card {
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 1.5rem;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    padding: 4rem 3rem;
+    max-width: 600px; /* Increased from 480px or 500px */
+    width: 100%;
+    animation: fadeIn 0.4s ease;
 }
 
-.user-avatar {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    border: 2px solid white;
-    object-fit: cover;
+
+html {
+  font-size: 14px;
 }
 
-.user-avatar-topright {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
 }
 
-.logo {
-    max-width: 500px;
-    height: auto;
-    margin-bottom: 2rem;
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-/* position & stacking */
-.dropdown.user-avatar-topright {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 1100;
+html {
+  position: relative;
+  min-height: 100%;
 }
 
-/* avatar styling & hover */
-.user-avatar {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.8);
-    object-fit: cover;
-    transition: transform 0.2s, border-color 0.2s;
-    cursor: pointer;
-}
-
-    .user-avatar:hover {
-        transform: scale(1.1);
-        border-color: #fff;
-    }
-
-/* glass-style dropdown panel */
-.dropdown-menu {
-    background: rgba(0, 0, 0, 0.5); /* semi‐transparent dark */
-    backdrop-filter: blur(12px); /* glassmorphism blur */
-    border: none;
-    border-radius: 0.75rem;
-    padding: 0.5rem 0;
-    min-width: 220px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-/* menu items */
-.dropdown-item {
-    color: rgba(255,255,255,0.8);
-    padding: 0.75rem 1.5rem;
-    font-weight: 500;
-    transition: background 0.2s, color 0.2s;
-}
-
-    .dropdown-item:hover,
-    .dropdown-item:focus {
-        color: #fff; /* make text pure white */
-        background: rgba(255,255,255,0.1);
-    }
-
-/* subtle divider */
-.dropdown-divider {
-    margin: 0.5rem 0;
-    border-top: 1px solid rgba(255,255,255,0.2);
+body {
+  margin-bottom: 60px;
 }
