@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace db_query_v1._0._0._1.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigrationForNewRequirements : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
