@@ -1,5 +1,4 @@
-﻿/* Base styles */
-html, body {
+﻿html, body {
     margin: 0;
     padding: 0;
     height: 100%;
@@ -34,16 +33,19 @@ html, body {
     animation: fadeIn 0.4s ease;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
+keyframes fadeIn {
+    from
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+{
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+to {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 }
 
 h3 {
@@ -120,99 +122,3 @@ h3 {
         text-decoration: underline;
     }
 
-/* Responsive breakpoints */
-
-/* Small devices (phones, <576px) */
-@media (max-width: 575.98px) {
-    .auth-card {
-        padding: 2rem 1.5rem;
-        max-width: 100%;
-        margin: 0 1rem;
-    }
-
-    h3 {
-        font-size: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .form-floating input,
-    .form-floating select {
-        padding: 1rem;
-        font-size: 1rem;
-    }
-
-    .btn-primary {
-        width: 100%;
-        padding: 1rem;
-        font-size: 1rem;
-    }
-}
-
-/* Medium devices (tablets, ≥576px and <768px) */
-@media (min-width: 576px) and (max-width: 767.98px) {
-    .auth-card {
-        padding: 3rem 2rem;
-        max-width: 500px;
-    }
-
-    h3 {
-        font-size: 1.75rem;
-    }
-
-    .form-floating input,
-    .form-floating select {
-        padding: 1.1rem;
-        font-size: 1.05rem;
-    }
-
-    .btn-primary {
-        padding: 0.9rem 1.2rem;
-        font-size: 1.05rem;
-    }
-}
-
-/* Large devices (desktops, ≥768px and <992px) */
-@media (min-width: 768px) and (max-width: 991.98px) {
-    .auth-card {
-        max-width: 550px;
-        padding: 3.5rem 2.5rem;
-    }
-
-    h3 {
-        font-size: 1.9rem;
-    }
-
-    .form-floating input,
-    .form-floating select {
-        padding: 1.15rem;
-        font-size: 1.08rem;
-    }
-
-    .btn-primary {
-        padding: 0.85rem 1rem;
-        font-size: 1.1rem;
-    }
-}
-
-/* Extra large devices (large desktops, ≥992px) */
-@media (min-width: 992px) {
-    .auth-card {
-        max-width: 600px;
-        padding: 4rem 3rem;
-    }
-
-    h3 {
-        font-size: 2rem;
-    }
-
-    .form-floating input,
-    .form-floating select {
-        padding: 1.2rem 1rem;
-        font-size: 1.1rem;
-    }
-
-    .btn-primary {
-        padding: 0.85rem 1rem;
-        font-size: 1.1rem;
-    }
-}

@@ -32,7 +32,7 @@ namespace db_query_v1._0._0._1.Controllers
             _userManager = userManager;
             _db = db;
         }
-       
+
         private  List<PreviousChat> ChatSummaries()
         {
             return _db.PreviousChats
@@ -292,14 +292,14 @@ namespace db_query_v1._0._0._1.Controllers
 
             var requestBody = new
             {
-                model = "gpt-4", 
+                model = "gpt-4o-mini",
                 messages = new[]
-     {
-        new { role = "system", content = systemMessage },
-        new { role = "user", content = userInput }
-    },
-                max_tokens = 1000, 
-                temperature = 0.3, 
+                {
+            new { role = "system", content = systemMessage },
+            new { role = "user", content = userInput }
+         },
+                max_tokens = 500,
+                temperature = 0.4,
                 stream = true
             };
 

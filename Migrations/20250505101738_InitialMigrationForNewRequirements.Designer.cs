@@ -12,8 +12,8 @@ using db_query_v1._0._0._1.Data;
 namespace db_query_v1._0._0._1.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250509093056_initial")]
-    partial class initial
+    [Migration("20250505101738_InitialMigrationForNewRequirements")]
+    partial class InitialMigrationForNewRequirements
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
