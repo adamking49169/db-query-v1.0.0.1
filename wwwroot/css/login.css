@@ -1,4 +1,4 @@
-﻿/* login.css */
+﻿/* login.css (with responsive tweaks) */
 html, body {
     margin: 0;
     padding: 0;
@@ -129,3 +129,83 @@ h3 {
     .small a:hover {
         text-decoration: underline;
     }
+
+
+/* ---------------------------------------------------
+   Responsive Breakpoints
+   --------------------------------------------------- */
+
+/* Tablets and small desktops */
+@media (max-width: 768px) {
+    .auth-bg {
+        padding: 1.5rem;
+    }
+
+    .auth-card {
+        padding: 3rem 2rem;
+        max-width: 500px;
+    }
+
+    h3 {
+        font-size: 1.75rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-floating input,
+    .form-floating select {
+        padding: 1rem 0.9rem;
+        font-size: 1rem;
+    }
+
+    .btn-primary {
+        font-size: 1rem;
+        padding: 0.8rem 0.9rem;
+    }
+}
+
+/* Mobile phones */
+@media (max-width: 576px) {
+    html, body {
+        overflow: auto; /* allow scrolling if needed */
+    }
+
+    .auth-bg {
+        padding: 1rem;
+    }
+
+    .auth-card {
+        padding: 2rem 1.5rem;
+        max-width: 100%;
+        border-radius: 1rem;
+    }
+
+    h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-floating input,
+    .form-floating select {
+        padding: 0.9rem 0.8rem;
+        font-size: 0.95rem;
+    }
+
+    .form-floating label {
+        font-size: 0.9rem;
+    }
+
+    .password-toggle {
+        font-size: 1rem;
+        top: 1rem;
+        right: 0.8rem;
+    }
+
+    .btn-primary {
+        font-size: 1rem;
+        padding: 0.75rem 0.9rem;
+    }
+
+    .small a {
+        font-size: 0.9rem;
+    }
+}
