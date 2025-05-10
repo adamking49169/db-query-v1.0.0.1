@@ -20,37 +20,72 @@ html, body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 2rem;
+    padding: 1.5rem;
 }
 
 .auth-card {
     backdrop-filter: blur(10px);
     background-color: rgba(255, 255, 255, 0.95);
-    border-radius: 1.5rem;
+    border-radius: 1rem;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-    padding: 4rem 3rem;
-    max-width: 600px;
+    padding: 0.8rem; /* Reduced padding for better fit */
+    max-width: 660px;
     width: 100%;
+    height: auto;
+    margin: 0 auto; /* Center it horizontally */
     animation: fadeIn 0.4s ease;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-height: 98vh; /* Ensure the card height doesn't exceed 90% of viewport height */
+    overflow: hidden; /* Prevent scrollbar */
+    display: flex;
+    flex-direction: column; /* Stack content vertically */
+    justify-content: flex-start;
 }
 
+    .auth-card .field {
+        width: 100%; /* Ensure fields don't overflow */
+        margin-bottom: 0.75rem; /* Reduced space between fields */
+        font-size: 0.9rem; /* Smaller font size */
+    }
+
+    .auth-card input,
+    .auth-card select,
+    .auth-card textarea {
+        width: 100%;
+        padding: 0.5rem; /* Reduced padding to fit smaller fields */
+        font-size: 0.9rem; /* Adjusted font size for better fit */
+        border-radius: 0.5rem;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+    }
+
+    /* Textarea-specific styling for smaller size */
+    .auth-card textarea {
+        height: 70px; /* Fixed height for textareas to make them smaller */
+        resize: none; /* Prevent resizing */
+    }
+
+/* Optional: Animation for fadeIn effect */
 @keyframes fadeIn {
-    from {
+    0% {
         opacity: 0;
-        transform: translateY(20px);
     }
 
-    to {
+    100% {
         opacity: 1;
-        transform: translateY(0);
     }
 }
+
+
 
 h3 {
     font-weight: 700;
     font-size: 2rem;
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 0.4rem;
 }
 
 .form-floating {
@@ -60,7 +95,7 @@ h3 {
     .form-floating input,
     .form-floating select {
         border-radius: 0.75rem !important;
-        padding: 1.2rem 1rem;
+        padding: 1.1rem 1rem;
         font-size: 1.1rem;
         border: 1px solid #ced4da;
         background-color: #fff;
