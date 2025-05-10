@@ -3,6 +3,7 @@ using db_query_v1._0._0._1.Models;
 using db_query_v1._0._0._1.Services;
 using DotNetEnv;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
 
@@ -17,10 +18,19 @@ namespace db_query_v1._0._0._1
             // In Development only, load a local .env file
             if (builder.Environment.IsDevelopment())
             {
-                Env.Load();
+                Env.Load();  // Load environment variables from .env
+                builder.Configuration.AddEnvironmentVariables();  // Add environment variables to the configuration
             }
 
             // --- Configure Services ---
+
+            builder.Services.AddSingleton<ComputerVisionClient>(provider =>
+            {
+                var apiKey = Env.GetString("AZURE_COMPUTER_VISION_API_KEY");
+                var endpoint = Env.GetString("AZURE_COMPUTER_VISION_ENDPOINT");
+                var credentials = new ApiKeyServiceClientCredentials(apiKey);
+                return new ComputerVisionClient(credentials) { Endpoint = endpoint };
+            });
 
             // EF Core SQL Server
             var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection")
