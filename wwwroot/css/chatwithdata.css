@@ -64,6 +64,21 @@ h3 {
     color: white;
 }
 
+.search-bar {
+    width: 90%; /* Adjust width */
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    align-items: center;
+    justify-content: center;
+    display: block; /* Ensures block-level behavior */
+    margin-left: auto; /* Centers the search bar horizontally */
+    margin-right: auto; /* Centers the search bar horizontally */
+}
+
+
+
 .hero-content {
     backdrop-filter: blur(6px);
     background-color: rgba(0, 0, 0, 0.6);

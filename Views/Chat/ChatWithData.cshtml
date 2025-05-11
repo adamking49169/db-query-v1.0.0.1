@@ -35,24 +35,52 @@
     <div class="auth-card container">
         <div class="sidebar">
             <h3>Previous Chats</h3>
+            <!-- Search bar for filtering chats -->
+            <input type="text" id="searchBar" class="search-bar" placeholder="Search previous chats..." onkeyup="searchChats()" />
+
             @if (Model.PreviousChats.Any() == true)
             {
                 var currentUsersPreviousChats = Model.PreviousChats
                 .Where(prev => prev.UserIdentityId == user.Id)
                 .ToList();
 
-                @foreach (var prevChat in currentUsersPreviousChats)
-                {
-                    <div class="history-item" onclick="openPreviousChat(@prevChat.Id)">
-                        @prevChat.Title (@prevChat.Date.ToLocalTime().ToString("d"))
-                    </div>
-                }
+                <!-- Container for displaying previous chats -->
+                <div id="chatListContainer">
+                    @foreach (var prevChat in currentUsersPreviousChats)
+                    {
+                        <div class="history-item" onclick="openPreviousChat(@prevChat.Id)" data-title="@prevChat.Title">
+                            @prevChat.Title (@prevChat.Date.ToLocalTime().ToString("d"))
+                        </div>
+                    }
+                </div>
             }
             else
             {
                 <div class="no-chats">No previous chats available.</div>
             }
         </div>
+
+       
+        
+        
+
+        <script>
+            // Function to search through chats based on the title
+            function searchChats() {
+                const searchTerm = document.getElementById("searchBar").value.toLowerCase();
+                const chats = document.querySelectorAll(".history-item");
+
+                chats.forEach(chat => {
+                    const title = chat.getAttribute("data-title").toLowerCase();
+                    if (title.includes(searchTerm)) {
+                        chat.style.display = "block"; // Show the chat if it matches the search term
+                    } else {
+                        chat.style.display = "none"; // Hide the chat if it doesn't match the search term
+                    }
+                });
+            }
+        </script>
+
 
         <div class="main-content">
             <div class="chat-header">Chat With Data</div>
