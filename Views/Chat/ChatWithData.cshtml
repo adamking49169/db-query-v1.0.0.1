@@ -9,7 +9,6 @@
 
 <link rel="stylesheet" href="~/css/chatwithdata.css" />
 
-
 @if (user != null)
 {
     <div class="dropdown user-avatar-topright">
@@ -43,32 +42,27 @@
             <!-- Search bar for filtering chats -->
             <input type="text" id="searchBar" class="search-bar" placeholder="Search previous chats..." onkeyup="searchChats()" />
 
-            @if (Model.PreviousChats.Any() == true)
+            @if (Model.PreviousChats.Any())
             {
                 var currentUsersPreviousChats = Model.PreviousChats
                 .Where(prev => prev.UserIdentityId == user.Id)
                 .ToList();
 
-                    <!-- Container for displaying previous chats -->
-                    <div id="chatListContainer">
+                <!-- Container for displaying previous chats -->
+                <div id="chatListContainer">
                     @foreach (var prevChat in currentUsersPreviousChats)
                     {
-                                <div class="history-item" onclick="openPreviousChat(@prevChat.Id)" data-title="@prevChat.Title">
+                        <div class="history-item" onclick="openPreviousChat(@prevChat.Id)" data-title="@prevChat.Title">
                             @prevChat.Title (@prevChat.Date.ToLocalTime().ToString("d"))
-                                </div>
+                        </div>
                     }
-                    </div>
+                </div>
             }
             else
             {
-                    <div class="no-chats">No previous chats available.</div>
+                <div class="no-chats">No previous chats available.</div>
             }
         </div>
-
-
-
-
-
 
         <script>
             // Function to search through chats based on the title
@@ -85,10 +79,36 @@
                     }
                 });
             }
+
+            function openPreviousChat(chatId) {
+                window.location.href = '@Url.Action("ViewChat", "Chat")?id=' + chatId;
+            }
+
+            function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.getElementById('mainContent');
+                const toggleButton = document.getElementById('toggleSidebarBtn');
+                const toggleIcon = document.getElementById('toggleIcon');
+
+                if (sidebar.style.width === "0px" || sidebar.style.width === "") {
+                    // Show the sidebar
+                    sidebar.style.width = "25%";  // Adjust to your preferred width
+                    mainContent.style.width = "75%"; // Adjust the main content width accordingly
+                    toggleButton.setAttribute("title", "Hide Sidebar"); // Tooltip text
+                    toggleIcon.classList.remove("fa-chevron-left"); // Change icon
+                    toggleIcon.classList.add("fa-chevron-right"); // Show the maximize icon
+                } else {
+                    // Hide the sidebar
+                    sidebar.style.width = "0"; // Collapse sidebar to 0
+                    mainContent.style.width = "100%"; // Take up all space for content
+                    toggleButton.setAttribute("title", "Show Sidebar"); // Tooltip text
+                    toggleIcon.classList.remove("fa-chevron-right"); // Change icon
+                    toggleIcon.classList.add("fa-chevron-left"); // Show the minimize icon
+                }
+            }
         </script>
 
-
-<div class="main-content" id="mainContent">
+        <div class="main-content" id="mainContent">
             <div class="chat-header">Chat With Data</div>
             <form method="post" asp-action="ChatWithData" asp-controller="Chat" class="chat-input">
                 <div class="input-container">
@@ -101,13 +121,12 @@
                 {
                     for (var i = 0; i < Model.ChatHistory.Count; i++)
                     {
-                                <input type="hidden" name="ChatHistory[@i].Role" value="@Model.ChatHistory[i].Role" />
-                                <input type="hidden" name="ChatHistory[@i].Content" value="@Model.ChatHistory[i].Content" />
-                                <input type="hidden" name="ChatHistory[@i].Timestamp" value="@Model.ChatHistory[i].Timestamp.ToString("o")" />
+                        <input type="hidden" name="ChatHistory[@i].Role" value="@Model.ChatHistory[i].Role" />
+                        <input type="hidden" name="ChatHistory[@i].Content" value="@Model.ChatHistory[i].Content" />
+                        <input type="hidden" name="ChatHistory[@i].Timestamp" value="@Model.ChatHistory[i].Timestamp.ToString("o")" />
                     }
                 }
             </form>
-
             <script>
                                  // Function to set focus and move the cursor to the start
                 function setFocusAndCursor() {
@@ -138,12 +157,10 @@
 
 
             </script>
-
-
             @if (Model.ChatHistory?.Any() == true)
             {
-                    <div class="chat-history-header">Chat History</div>
-                    <ul class="chat-history">
+                <div class="chat-history-header">Chat History</div>
+                <ul class="chat-history">
                     @{
                         var pairs = Model.ChatHistory
                         .Select((msg, idx) => new { msg, idx })
@@ -160,67 +177,62 @@
 
                     @foreach (var p in pairs)
                     {
-                                <!-- User message -->
-                                <li class="chat-message">
-                                    <div class="avatar user">@user.FirstName[0]@user.LastName[0]</div>
-
-                                    <div class="chat-bubble user-message">
-                                        <span>@p.User.Content</span>
-                                        <div class="chat-meta">
+                        <!-- User message -->
+                        <li class="chat-message">
+                            <div class="avatar user">@user.FirstName[0]@user.LastName[0]</div>
+                            <div class="chat-bubble user-message">
+                                <span>@p.User.Content</span>
+                                <div class="chat-meta">
                                     @p.User.Role • @p.User.Timestamp.ToLocalTime().ToString("g")
-                                        </div>
-                                    </div>
-                                </li>
+                                </div>
+                            </div>
+                        </li>
 
                         @if (p.Assistant != null)
                         {
-                                        <!-- Assistant message -->
-                                        <li class="chat-message">
-                                            <img src="/images/navbar-brand.png"
-                                                 alt="Assistant Avatar"
-                                                 class="avatar assistant" />
-
-                                            <div class="chat-bubble assistant-message">
-                                                <span>@p.Assistant.Content</span>
-
+                            <!-- Assistant message -->
+                            <li class="chat-message">
+                                <img src="/images/navbar-brand.png"
+                                     alt="Assistant Avatar"
+                                     class="avatar assistant" />
+                                <div class="chat-bubble assistant-message">
+                                    <span>@p.Assistant.Content</span>
 
                                     @if (!string.IsNullOrWhiteSpace(p.Assistant.ImageUrl))
                                     {
-                                                        <div class="assistant-image">
-                                                            <img src="@p.Assistant.ImageUrl" alt="Assistant sent image" />
-                                                        </div>
+                                        <div class="assistant-image">
+                                            <img src="@p.Assistant.ImageUrl" alt="Assistant sent image" />
+                                        </div>
                                     }
 
-
-                                                <div class="chat-meta">
+                                    <div class="chat-meta">
                                         @p.Assistant.Role • @p.Assistant.Timestamp.ToLocalTime().ToString("g")
-                                                </div>
-                                            </div>
-                                        </li>
+                                    </div>
+                                </div>
+                            </li>
                         }
 
-                                <li class="separator">
-                                    <hr class="chat-separator" />
-                                </li>
+                        <li class="separator">
+                            <hr class="chat-separator" />
+                        </li>
                     }
-                    </ul>
+                </ul>
             }
-
 
             @if (Model.Data?.Any() == true)
             {
-                    <div class="chat-history-header">Data Output</div>
-                    <table class="table">
-                        <thead>
-                            <tr><th>Column</th><th>Value</th></tr>
-                        </thead>
-                        <tbody>
+                <div class="chat-history-header">Data Output</div>
+                <table class="table">
+                    <thead>
+                        <tr><th>Column</th><th>Value</th></tr>
+                    </thead>
+                    <tbody>
                         @foreach (var row in Model.Data)
                         {
-                                    <tr><td>@row.ColumnName</td><td>@row.Value</td></tr>
+                            <tr><td>@row.ColumnName</td><td>@row.Value</td></tr>
                         }
-                        </tbody>
-                    </table>
+                    </tbody>
+                </table>
             }
         </div>
     </div>
