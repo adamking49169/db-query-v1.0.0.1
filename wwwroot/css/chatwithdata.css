@@ -546,3 +546,40 @@ textarea {
         background-color: #f8f9fa;
     }
 
+/* Button for toggling the sidebar */
+.toggle-sidebar-btn {
+    background-color: #0066ff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 9999;
+}
+
+    .toggle-sidebar-btn:hover {
+        background-color: #004bb5;
+    }
+
+/* Sidebar changes to transition its width */
+.sidebar {
+    width: 25%; /* Default width of sidebar */
+    max-height: 70vh;
+    overflow-y: auto;
+    background-color: #292A2D;
+    border-radius: 1rem;
+    transition: width 0.3s ease; /* Smooth transition for width change */
+}
+
+/* Main content adjusts to fill space when sidebar is hidden */
+.main-content {
+    width: 75%; /* Default width of the main content */
+    display: flex;
+    flex-direction: column;
+    background-color: #292A2D;
+    border-radius: 1rem;
+    transition: width 0.3s ease; /* Smooth transition for main content width change */
+}
