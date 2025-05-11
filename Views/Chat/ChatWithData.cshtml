@@ -12,33 +12,36 @@
 
 @if (user != null)
 {
-        <div class="dropdown user-avatar-topright">
-            <a href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="https://ui-avatars.com/api/?name=@user.FirstName+@user.LastName&background=0D8ABC&color=fff"
-                     alt="Avatar"
-                     class="user-avatar" />
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                <li><a class="dropdown-item" href="@Url.Action("Settings","Account")">Settings</a></li>
-                <li><a class="dropdown-item" href="@Url.Action("Upgrade","Account")">Upgrade Plan</a></li>
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                    <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
-                        <button type="submit" class="dropdown-item">Log out</button>
-                    </form>
-                </li>
-            </ul>
-        </div>
+    <div class="dropdown user-avatar-topright">
+        <a href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="https://ui-avatars.com/api/?name=@user.FirstName+@user.LastName&background=0D8ABC&color=fff"
+                 alt="Avatar"
+                 class="user-avatar" />
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="@Url.Action("Settings","Account")">Settings</a></li>
+            <li><a class="dropdown-item" href="@Url.Action("Upgrade","Account")">Upgrade Plan</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                    <button type="submit" class="dropdown-item">Log out</button>
+                </form>
+            </li>
+        </ul>
+    </div>
 }
 
 <div class="auth-bg">
     <div class="auth-card container">
-       <button id="toggleSidebarBtn" class="toggle-sidebar-btn" onclick="toggleSidebar()">Hide Sidebar</button>
+        <!-- Button to hide/show sidebar with minimize/maximize icon -->
+        <button id="toggleSidebarBtn" class="toggle-sidebar-btn" onclick="toggleSidebar()">
+            <i id="toggleIcon" class="fas fa-chevron-left"></i> <!-- Minimize icon initially -->
+        </button>
 
-<div class="sidebar" id="sidebar">
-    <h3>Previous Chats</h3>
-    <!-- Search bar for filtering chats -->
-    <input type="text" id="searchBar" class="search-bar" placeholder="Search previous chats..." onkeyup="searchChats()" />
+        <div class="sidebar" id="sidebar">
+            <h3>Previous Chats</h3>
+            <!-- Search bar for filtering chats -->
+            <input type="text" id="searchBar" class="search-bar" placeholder="Search previous chats..." onkeyup="searchChats()" />
 
             @if (Model.PreviousChats.Any() == true)
             {
@@ -46,21 +49,21 @@
                 .Where(prev => prev.UserIdentityId == user.Id)
                 .ToList();
 
-                <!-- Container for displaying previous chats -->
-                <div id="chatListContainer">
+                    <!-- Container for displaying previous chats -->
+                    <div id="chatListContainer">
                     @foreach (var prevChat in currentUsersPreviousChats)
                     {
                                 <div class="history-item" onclick="openPreviousChat(@prevChat.Id)" data-title="@prevChat.Title">
                             @prevChat.Title (@prevChat.Date.ToLocalTime().ToString("d"))
                                 </div>
                     }
-                </div>
+                    </div>
             }
             else
             {
-                <div class="no-chats">No previous chats available.</div>
+                    <div class="no-chats">No previous chats available.</div>
             }
-</div>
+        </div>
 
 
 
@@ -275,6 +278,49 @@
 </script>
 
 <script>
+    function openPreviousChat(chatId) {
+        window.location.href = '@Url.Action("ViewChat", "Chat")?id=' + chatId;
+    }
+</script>
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const toggleButton = document.getElementById('toggleSidebarBtn');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (sidebar.style.width === "0px" || sidebar.style.width === "") {
+            // Show the sidebar
+            sidebar.style.width = "25%";  // Adjust to your preferred width
+            mainContent.style.width = "75%"; // Adjust the main content width accordingly
+            toggleButton.setAttribute("title", "Hide Sidebar"); // Tooltip text
+            toggleIcon.classList.remove("fa-chevron-left"); // Change icon
+            toggleIcon.classList.add("fa-chevron-right"); // Show the maximize icon
+        } else {
+            // Hide the sidebar
+            sidebar.style.width = "0"; // Collapse sidebar to 0
+            mainContent.style.width = "100%"; // Take up all space for content
+            toggleButton.setAttribute("title", "Show Sidebar"); // Tooltip text
+            toggleIcon.classList.remove("fa-chevron-right"); // Change icon
+            toggleIcon.classList.add("fa-chevron-left"); // Show the minimize icon
+        }
+    }
+
+    // Function to search through chats based on the title
+    function searchChats() {
+        const searchTerm = document.getElementById("searchBar").value.toLowerCase();
+        const chats = document.querySelectorAll(".history-item");
+
+        chats.forEach(chat => {
+            const title = chat.getAttribute("data-title").toLowerCase();
+            if (title.includes(searchTerm)) {
+                chat.style.display = "block"; // Show the chat if it matches the search term
+            } else {
+                chat.style.display = "none"; // Hide the chat if it doesn't match the search term
+            }
+        });
+    }
+
     function openPreviousChat(chatId) {
         window.location.href = '@Url.Action("ViewChat", "Chat")?id=' + chatId;
     }
