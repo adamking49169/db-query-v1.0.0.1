@@ -148,7 +148,6 @@ namespace db_query_v1._0._0._1.Controllers
                 Data = new List<DataRow>(),
                 PreviousChats = _db.PreviousChats
                     .OrderByDescending(pc => pc.Date)
-                    .Take(10)
                     .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date, UserIdentityId = pc.UserIdentityId, Id = pc.Id })
                     .ToList()
             };
