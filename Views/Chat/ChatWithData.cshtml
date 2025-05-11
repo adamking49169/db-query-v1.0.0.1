@@ -33,9 +33,10 @@
 <div class="auth-bg">
     <div class="auth-card container">
         <!-- Button to hide/show sidebar with minimize/maximize icon -->
-        <button id="toggleSidebarBtn" class="toggle-sidebar-btn" onclick="toggleSidebar()">
-            <i id="toggleIcon" class="fas fa-chevron-left"></i> <!-- Minimize icon initially -->
-        </button>
+       <button id="toggleSidebarBtn" class="toggle-sidebar-btn" onclick="toggleSidebar()">
+    <i id="toggleIcon" class="fas fa-chevron-left"></i> <!-- Minimize icon initially -->
+</button>
+
 
         <div class="sidebar" id="sidebar">
             <h3>Previous Chats</h3>
@@ -247,47 +248,8 @@
         }
     });
 </script>
-<script>
-    function openPreviousChat(chatId) {
-        // You can use AJAX to fetch chat data or simply navigate to another view.
-        // For demonstration, we will redirect to a URL with the chatId.
-        window.location.href = '@Url.Action("ViewChat", "Chat")?id=' + chatId;
-    }
-</script>
-<script>
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const toggleButton = document.getElementById('toggleSidebarBtn');
 
-        if (sidebar.style.width === "0px" || sidebar.style.width === "") {
-            // Show the sidebar
-            sidebar.style.width = "25%";  // Adjust to your preferred width
-            mainContent.style.width = "75%"; // Adjust the main content width accordingly
-            toggleButton.innerText = "Hide Sidebar"; // Change button text
-        } else {
-            // Hide the sidebar
-            sidebar.style.width = "0"; // Collapse sidebar to 0
-            mainContent.style.width = "100%"; // Take up all space for content
-            toggleButton.innerText = "Show Sidebar"; // Change button text
-        }
-    }
 
-    // Function to search through chats based on the title
-    function searchChats() {
-        const searchTerm = document.getElementById("searchBar").value.toLowerCase();
-        const chats = document.querySelectorAll(".history-item");
-
-        chats.forEach(chat => {
-            const title = chat.getAttribute("data-title").toLowerCase();
-            if (title.includes(searchTerm)) {
-                chat.style.display = "block"; // Show the chat if it matches the search term
-            } else {
-                chat.style.display = "none"; // Hide the chat if it doesn't match the search term
-            }
-        });
-    }
-</script>
 
 <script>
     function openPreviousChat(chatId) {
@@ -295,28 +257,51 @@
     }
 </script>
 <script>
-    function toggleSidebar() {
+       function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
         const toggleButton = document.getElementById('toggleSidebarBtn');
         const toggleIcon = document.getElementById('toggleIcon');
 
-        if (sidebar.style.width === "0px" || sidebar.style.width === "") {
-            // Show the sidebar
-            sidebar.style.width = "25%";  // Adjust to your preferred width
-            mainContent.style.width = "75%"; // Adjust the main content width accordingly
-            toggleButton.setAttribute("title", "Hide Sidebar"); // Tooltip text
-            toggleIcon.classList.remove("fa-chevron-left"); // Change icon
-            toggleIcon.classList.add("fa-chevron-right"); // Show the maximize icon
+        // Check if the screen width is smaller than 768px (mobile)
+        if (window.innerWidth <= 768) {
+            // For mobile, always hide the sidebar on toggle
+            if (sidebar.style.width === "0px" || sidebar.style.width === "") {
+                // Show the sidebar
+                sidebar.style.width = "80%"; // Adjust width for mobile
+                mainContent.style.width = "20%";
+                toggleButton.setAttribute("title", "Hide Sidebar");
+                toggleIcon.classList.remove("fa-chevron-left");
+                toggleIcon.classList.add("fa-chevron-right");
+            } else {
+                // Hide the sidebar
+                sidebar.style.width = "0";
+                mainContent.style.width = "100%";
+                toggleButton.setAttribute("title", "Show Sidebar");
+                toggleIcon.classList.remove("fa-chevron-right");
+                toggleIcon.classList.add("fa-chevron-left");
+            }
         } else {
-            // Hide the sidebar
-            sidebar.style.width = "0"; // Collapse sidebar to 0
-            mainContent.style.width = "100%"; // Take up all space for content
-            toggleButton.setAttribute("title", "Show Sidebar"); // Tooltip text
-            toggleIcon.classList.remove("fa-chevron-right"); // Change icon
-            toggleIcon.classList.add("fa-chevron-left"); // Show the minimize icon
+            // For larger screens, use original sidebar width
+            if (sidebar.style.width === "0px" || sidebar.style.width === "") {
+                sidebar.style.width = "25%";
+                mainContent.style.width = "75%";
+                toggleButton.setAttribute("title", "Hide Sidebar");
+                toggleIcon.classList.remove("fa-chevron-left");
+                toggleIcon.classList.add("fa-chevron-right");
+            } else {
+                sidebar.style.width = "0";
+                mainContent.style.width = "100%";
+                toggleButton.setAttribute("title", "Show Sidebar");
+                toggleIcon.classList.remove("fa-chevron-right");
+                toggleIcon.classList.add("fa-chevron-left");
+            }
         }
     }
+
+    // Optional: Add event listener for resize to recheck if the sidebar should be hidden on mobile
+    window.addEventListener('resize', toggleSidebar);
+
 
     // Function to search through chats based on the title
     function searchChats() {

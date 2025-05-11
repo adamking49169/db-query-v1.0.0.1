@@ -7,7 +7,45 @@
     background-color: #212121;
     overflow: hidden;
 }
+@media (max-width: 768px) {
+    .sidebar {
+        width: 0;
+        transition: width 0.3s ease; /* Smooth transition for hiding the sidebar */
+    }
 
+    .main-content {
+        width: 100%;
+    }
+
+    /* Adjust the toggle button to be on top right */
+    .toggle-sidebar-btn {
+        top: 10px;
+        left: auto;
+        right: 10px;
+    }
+
+    /* Adjust the chat input container for mobile */
+    .chat-input textarea {
+        width: 100%;
+    }
+}
+@media (min-width: 769px) {
+    .sidebar {
+        width: 25%;
+        transition: width 0.3s ease; /* Smooth transition for showing the sidebar */
+    }
+
+    .main-content {
+        width: 75%;
+    }
+
+    .toggle-sidebar-btn {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 9999;
+    }
+}
 .no-chats {
     text-align: center;
     color: white;
