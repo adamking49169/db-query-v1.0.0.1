@@ -80,15 +80,41 @@
                 });
             }
 
-                             function toggleSidebar() {
+                                    function initSidebar() {
+              const sidebar     = document.getElementById('sidebar');
+              const mainContent = document.getElementById('mainContent');
+              const toggleIcon  = document.getElementById('toggleIcon');
+              const container   = document.querySelector('.container');
+
+              if (window.innerWidth <= 768) {
+                // mobile → start collapsed
+                sidebar.style.width     = '0';
+                mainContent.style.width = '100%';
+                toggleIcon.classList.replace('fa-chevron-left','fa-chevron-right');
+                container.classList.add('no-gap');
+              } else {
+                // desktop → start expanded
+                sidebar.style.width     = '25%';
+                mainContent.style.width = '75%';
+                toggleIcon.classList.replace('fa-chevron-right','fa-chevron-left');
+                container.classList.remove('no-gap');
+              }
+            }
+
+            // 3) wire it up on load + on resize
+            document.addEventListener('DOMContentLoaded', initSidebar);
+            window.addEventListener('resize', initSidebar);
+
+            // your existing toggleSidebar() stays exactly the same
+            function toggleSidebar() {
               const sidebar     = document.getElementById('sidebar');
               const mainContent = document.getElementById('mainContent');
               const toggleBtn   = document.getElementById('toggleSidebarBtn');
               const toggleIcon  = document.getElementById('toggleIcon');
               const container   = document.querySelector('.container');
 
-              // decide whether we're hiding or showing
-              const isHidden = sidebar.style.width === '0px' || sidebar.style.width === '';
+              // inline-style width === '' or '0px' means “hidden”
+              const isHidden = !sidebar.style.width || sidebar.style.width === '0px';
 
               if (isHidden) {
                 // expand
@@ -106,12 +132,6 @@
                 container.classList.add('no-gap');
               }
             }
-
-            // init + resize
-            document.addEventListener('DOMContentLoaded', toggleSidebar);
-            window.addEventListener('resize', toggleSidebar);
-
-
 
              function openPreviousChat(chatId) {
                  window.location.href = '@Url.Action("ViewChat", "Chat")?id=' + chatId;
