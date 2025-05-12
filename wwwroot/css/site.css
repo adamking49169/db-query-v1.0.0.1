@@ -130,8 +130,8 @@ html, body {
 }
 
 .user-avatar {
-    width: 70px;
-    height: 70px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     border: 2px solid white;
     object-fit: cover;
@@ -160,8 +160,8 @@ html, body {
 
 /* avatar styling & hover */
 .user-avatar {
-    width: 70px;
-    height: 70px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     border: 2px solid rgba(255,255,255,0.8);
     object-fit: cover;
