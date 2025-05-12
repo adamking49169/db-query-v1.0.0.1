@@ -90,6 +90,7 @@
                   // mobile → start collapsed, show main content
                   sidebar.style.width       = '0';
                   mainContent.style.display = 'flex';
+                   mainContent.style.width   = '100%';
                   toggleIcon.classList.replace('fa-chevron-left','fa-chevron-right');
                   container.classList.add('no-gap');
                 } else {
@@ -114,7 +115,7 @@
 
                 if (isHidden) {
                   // EXPAND
-                  sidebar.style.width = mobile ? '80%' : '25%';
+                  sidebar.style.width = mobile ? '100%' : '25%';
                   toggleBtn.title     = 'Hide Sidebar';
                   toggleIcon.classList.replace('fa-chevron-right','fa-chevron-left');
                   container.classList.remove('no-gap');
