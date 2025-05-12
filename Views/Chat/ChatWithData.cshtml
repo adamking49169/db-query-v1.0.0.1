@@ -79,59 +79,68 @@
                     }
                 });
             }
+            function initSidebar() {
+                const sidebar     = document.getElementById('sidebar');
+                const mainContent = document.getElementById('mainContent');
+                const toggleIcon  = document.getElementById('toggleIcon');
+                const container   = document.querySelector('.container');
+                const mobile      = window.innerWidth <= 768;
 
-                                    function initSidebar() {
-              const sidebar     = document.getElementById('sidebar');
-              const mainContent = document.getElementById('mainContent');
-              const toggleIcon  = document.getElementById('toggleIcon');
-              const container   = document.querySelector('.container');
-
-              if (window.innerWidth <= 768) {
-                // mobile → start collapsed
-                sidebar.style.width     = '0';
-                mainContent.style.width = '100%';
-                toggleIcon.classList.replace('fa-chevron-left','fa-chevron-right');
-                container.classList.add('no-gap');
-              } else {
-                // desktop → start expanded
-                sidebar.style.width     = '25%';
-                mainContent.style.width = '75%';
-                toggleIcon.classList.replace('fa-chevron-right','fa-chevron-left');
-                container.classList.remove('no-gap');
+                if (mobile) {
+                  // mobile → start collapsed, show main content
+                  sidebar.style.width       = '0';
+                  mainContent.style.display = 'flex';
+                  toggleIcon.classList.replace('fa-chevron-left','fa-chevron-right');
+                  container.classList.add('no-gap');
+                } else {
+                  // desktop → start expanded, always show both panels
+                  sidebar.style.width       = '25%';
+                  mainContent.style.display = 'flex';
+                  mainContent.style.width   = '75%';
+                  toggleIcon.classList.replace('fa-chevron-right','fa-chevron-left');
+                  container.classList.remove('no-gap');
+                }
               }
-            }
 
-            // 3) wire it up on load + on resize
-            document.addEventListener('DOMContentLoaded', initSidebar);
-            window.addEventListener('resize', initSidebar);
+              function toggleSidebar() {
+                const sidebar     = document.getElementById('sidebar');
+                const mainContent = document.getElementById('mainContent');
+                const toggleBtn   = document.getElementById('toggleSidebarBtn');
+                const toggleIcon  = document.getElementById('toggleIcon');
+                const container   = document.querySelector('.container');
+                const mobile      = window.innerWidth <= 768;
 
-            // your existing toggleSidebar() stays exactly the same
-            function toggleSidebar() {
-              const sidebar     = document.getElementById('sidebar');
-              const mainContent = document.getElementById('mainContent');
-              const toggleBtn   = document.getElementById('toggleSidebarBtn');
-              const toggleIcon  = document.getElementById('toggleIcon');
-              const container   = document.querySelector('.container');
+                const isHidden = !sidebar.style.width || sidebar.style.width === '0px';
 
-              // inline-style width === '' or '0px' means “hidden”
-              const isHidden = !sidebar.style.width || sidebar.style.width === '0px';
+                if (isHidden) {
+                  // EXPAND
+                  sidebar.style.width = mobile ? '80%' : '25%';
+                  toggleBtn.title     = 'Hide Sidebar';
+                  toggleIcon.classList.replace('fa-chevron-right','fa-chevron-left');
+                  container.classList.remove('no-gap');
 
-              if (isHidden) {
-                // expand
-                sidebar.style.width     = window.innerWidth <= 768 ? '80%' : '25%';
-                mainContent.style.width = window.innerWidth <= 768 ? '20%' : '75%';
-                toggleBtn.title         = 'Hide Sidebar';
-                toggleIcon.classList.replace('fa-chevron-right','fa-chevron-left');
-                container.classList.remove('no-gap');
-              } else {
-                // collapse
-                sidebar.style.width     = '0';
-                mainContent.style.width = '100%';
-                toggleBtn.title         = 'Show Sidebar';
-                toggleIcon.classList.replace('fa-chevron-left','fa-chevron-right');
-                container.classList.add('no-gap');
+                  if (mobile) {
+                    // on mobile, completely hide the main content
+                    mainContent.style.display = 'none';
+                  } else {
+                    mainContent.style.display = 'flex';
+                    mainContent.style.width   = '75%';
+                  }
+                } else {
+                  // COLLAPSE
+                  sidebar.style.width = '0';
+                  toggleBtn.title     = 'Show Sidebar';
+                  toggleIcon.classList.replace('fa-chevron-left','fa-chevron-right');
+                  container.classList.add('no-gap');
+
+                  // always restore main content
+                  mainContent.style.display = 'flex';
+                  mainContent.style.width   = mobile ? '100%' : '100%';
+                }
               }
-            }
+
+              document.addEventListener('DOMContentLoaded', initSidebar);
+              window.addEventListener('resize', initSidebar);
 
              function openPreviousChat(chatId) {
                  window.location.href = '@Url.Action("ViewChat", "Chat")?id=' + chatId;
