@@ -5,7 +5,11 @@ using DotNetEnv;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using System.Net.Http.Headers;
+using System.Diagnostics;
+using System.Linq;
 
 namespace db_query_v1._0._0._1
 {
@@ -18,12 +22,13 @@ namespace db_query_v1._0._0._1
             // In Development only, load a local .env file
             if (builder.Environment.IsDevelopment())
             {
-                Env.Load();  // Load environment variables from .env
-                builder.Configuration.AddEnvironmentVariables();  // Add environment variables to the configuration
+                Env.Load();
+                builder.Configuration.AddEnvironmentVariables();
             }
 
             // --- Configure Services ---
 
+            // Azure Computer Vision
             builder.Services.AddSingleton<ComputerVisionClient>(provider =>
             {
                 var apiKey = Env.GetString("AZURE_COMPUTER_VISION_API_KEY");
@@ -34,11 +39,7 @@ namespace db_query_v1._0._0._1
 
             // EF Core SQL Server
             var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException(
-                    "Connection string 'DefaultConnection' not found. " +
-                    "Please configure it under Azure → App Service → Configuration → Connection strings."
-                );
-
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(defaultConn));
 
@@ -47,16 +48,36 @@ namespace db_query_v1._0._0._1
                 .AddDefaultIdentity<ApplicationUser>(opts => opts.SignIn.RequireConfirmedAccount = false)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            // Your scoped services
+            // Scoped services
             builder.Services.AddScoped<IPlanService, PlanService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<Q>();
 
-            // MVC + Razor
+            // OCR & ChatGPT
+            builder.Services.AddSingleton<OcrService>();
+            builder.Services.AddHttpClient<ChatGptService>();
+            builder.Services.AddSingleton(sp => new ChatGptService(
+                sp.GetRequiredService<HttpClient>(),
+                builder.Configuration["OPENAI_API_KEY"]));
+
+            // MVC & API
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
+            builder.Services.AddControllers();
 
-            // Sessions & cookies
+            // Swagger
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "My API",
+                    Version = "v1",
+                    Description = "Describe your API here"
+                });
+            });
+
+            // Sessions & Cookies
             builder.Services.AddSession();
             builder.Services.ConfigureApplicationCookie(options =>
             {
@@ -64,22 +85,15 @@ namespace db_query_v1._0._0._1
                 options.AccessDeniedPath = "/Account/AccessDenied";
             });
 
-            // Developer exception page for EF
+            // EF Developer Page
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            // --- Configure OpenAI HTTP client via API key ---
+            // OpenAI HTTP client
             var openAiKey = builder.Configuration["OPENAI_API_KEY"];
-
-            // In Production, ensure the key is present
             if (builder.Environment.IsProduction() && string.IsNullOrEmpty(openAiKey))
             {
-                throw new InvalidOperationException(
-                    "OpenAI API Key not found. " +
-                    "Please configure 'OPENAI_API_KEY' under Azure → App Service → Configuration → Application settings."
-                );
+                throw new InvalidOperationException("OpenAI API Key not found.");
             }
-
-            // Only register OpenAI client if a key is available
             if (!string.IsNullOrEmpty(openAiKey))
             {
                 builder.Services.AddHttpClient("OpenAI", client =>
@@ -89,19 +103,50 @@ namespace db_query_v1._0._0._1
                         new AuthenticationHeaderValue("Bearer", openAiKey);
                 });
             }
-
-            // You can still add other HttpClients if needed
             builder.Services.AddHttpClient();
 
-            // Build pipeline
             var app = builder.Build();
 
-            // --- Middleware Pipeline ---
-            app.UseSession();
+            // Automatically open Swagger on IIS Express
+            app.Lifetime.ApplicationStarted.Register(() =>
+            {
+                string url = null;
+                // Kestrel
+                var addresses = app.Services.GetService<IServerAddressesFeature>()?.Addresses;
+                var address = addresses?.FirstOrDefault();
+                if (!string.IsNullOrEmpty(address))
+                {
+                    url = address.TrimEnd('/') + "/swagger";
+                }
+                else
+                {
+                    // IIS Express
+                    var port = Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORT");
+                    if (!string.IsNullOrEmpty(port))
+                    {
+                        url = $"https://localhost:{port}/swagger";
+                    }
+                }
+                if (!string.IsNullOrEmpty(url))
+                {
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    }
+                    catch { }
+                }
+            });
 
+            // Middleware
+            app.UseSession();
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
+                });
             }
             else
             {
@@ -111,12 +156,11 @@ namespace db_query_v1._0._0._1
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Routes
+            app.MapControllers();
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");

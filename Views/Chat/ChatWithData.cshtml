@@ -18,8 +18,8 @@
                  class="user-avatar" />
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="@Url.Action("Settings","Account")">Settings</a></li>
-            <li><a class="dropdown-item" href="@Url.Action("Upgrade","Account")">Upgrade Plan</a></li>
+            <li><a class="dropdown-item" href="@Url.Action("Settings", "Account")">Settings</a></li>
+            <li><a class="dropdown-item" href="@Url.Action("Upgrade", "Account")">Upgrade Plan</a></li>
             <li><hr class="dropdown-divider" /></li>
             <li>
                 <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
@@ -151,11 +151,25 @@
 
         <div class="main-content" id="mainContent">
             <div class="chat-header">Chat With Data</div>
+            <form id="imageUploadForm" enctype="multipart/form-data" style="margin-bottom: 1rem;">
+                <label for="imageFile" class="upload-label">Upload Image for Analysis</label>
+                <div class="upload-row">
+                    <input type="file" id="imageFile" name="file" accept="image/*" required />
+                    <button type="submit" class="upload-button">Analyze Image</button>
+                </div>
+            </form>
+
+
+
             <form method="post" asp-action="ChatWithData" asp-controller="Chat" class="chat-input">
                 <div class="input-container">
                     <textarea id="UserInput" name="UserInput" placeholder="Ask a question..." required></textarea>
                     <button type="submit" class="send-button">Send</button>
                 </div>
+
+
+                <div id="imageAnalysisResult" class="analysis-result" style="margin-top: 20px;"></div>
+
 
                 @* Preserve history inputs *@
                 @if (Model.ChatHistory != null)
@@ -197,6 +211,57 @@
                 });
 
 
+            </script>
+            <script>
+                document.getElementById("imageUploadForm").addEventListener("submit", async function (e) {
+                    e.preventDefault();
+
+                    const fileInput = document.getElementById("imageFile");
+                    const resultDiv = document.getElementById("imageAnalysisResult");
+
+                    if (!fileInput.files.length) {
+                        resultDiv.innerText = "Please select an image file.";
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append("file", fileInput.files[0]);
+
+                    resultDiv.innerText = "Analyzing image, please wait...";
+
+                    try {
+                        const response = await fetch("/api/image/extract-and-process", {
+                            method: "POST",
+                            body: formData
+                        });
+
+                        if (!response.ok) {
+                            throw new Error("Image analysis failed.");
+                        }
+
+                        const result = await response.json();
+
+                                       resultDiv.innerHTML = `
+                    <li class="chat-message">
+                        <img src="/images/navbar-brand.png"
+                             alt="Assistant Avatar"
+                             class="avatar assistant" />
+                        <div class="chat-bubble assistant-message">
+                            <span>
+                                <strong>Extracted Text:</strong><br/>${result.extractedText}<br/><br/>
+                                <strong>ChatGPT Response:</strong><br/>${result.chatGptResponse}
+                            </span>
+                            <div class="chat-meta">
+                                Assistant • ${new Date().toLocaleString()}
+                            </div>
+                        </div>
+                    </li>
+                `;
+
+                    } catch (error) {
+                        resultDiv.innerText = "Error: " + error.message;
+                    }
+                });
             </script>
 
             @if (Model.ChatHistory?.Any() == true)
