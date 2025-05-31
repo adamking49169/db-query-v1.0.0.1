@@ -4,7 +4,9 @@
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Chat With Data";
-    var user = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+    var user = SignInManager.IsSignedIn(User)
+        ? await UserManager.GetUserAsync(User)
+        : null;
 }
 
 <link rel="stylesheet" href="~/css/chatwithdata.css" />
@@ -32,29 +34,29 @@
 
 <div class="auth-bg">
     <div class="auth-card container">
-        <!-- Button to hide/show sidebar with minimize/maximize icon -->
-        <button id="toggleSidebarBtn" class="toggle-sidebar-btn" onclick="toggleSidebar()">
-            <i id="toggleIcon" class="fas fa-chevron-left"></i> <!-- Minimize icon initially -->
+        <!-- Sidebar Toggle -->
+        <button id="toggleSidebarBtn" class="toggle-sidebar-btn" title="Toggle Sidebar">
+            <i id="toggleIcon" class="fas fa-chevron-left"></i>
         </button>
 
-
+        <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <h3>Previous Chats</h3>
-            <!-- Search bar for filtering chats -->
-            <input type="text" id="searchBar" class="search-bar" placeholder="Search previous chats..." onkeyup="searchChats()" />
+            <input type="text"
+                   id="searchBar"
+                   class="search-bar"
+                   placeholder="Search previous chats..."
+                   onkeyup="searchChats()" />
 
             @if (Model.PreviousChats.Any())
             {
-                var currentUsersPreviousChats = Model.PreviousChats
-                .Where(prev => prev.UserIdentityId == user.Id)
-                .ToList();
-
-                <!-- Container for displaying previous chats -->
                 <div id="chatListContainer">
-                    @foreach (var prevChat in currentUsersPreviousChats)
+                    @foreach (var chat in Model.PreviousChats.Where(c => c.UserIdentityId == user.Id))
                     {
-                        <div class="history-item" onclick="openPreviousChat(@prevChat.Id)" data-title="@prevChat.Title">
-                            @prevChat.Title (@prevChat.Date.ToLocalTime().ToString("d"))
+                        <div class="history-item"
+                             data-title="@chat.Title"
+                             onclick="openPreviousChat(@chat.Id)">
+                            @chat.Title (@chat.Date.ToLocalTime().ToString("d"))
                         </div>
                     }
                 </div>
@@ -65,208 +67,66 @@
             }
         </div>
 
-        <script>
-            function searchChats() {
-                const searchTerm = document.getElementById("searchBar").value.toLowerCase();
-                const chats = document.querySelectorAll(".history-item");
-
-                chats.forEach(chat => {
-                    const title = chat.getAttribute("data-title").toLowerCase();
-                    if (title.includes(searchTerm)) {
-                        chat.style.display = "block"; // Show the chat if it matches the search term
-                    } else {
-                        chat.style.display = "none"; // Hide the chat if it doesn't match the search term
-                    }
-                });
-            }
-            function initSidebar() {
-                const sidebar     = document.getElementById('sidebar');
-                const mainContent = document.getElementById('mainContent');
-                const toggleIcon  = document.getElementById('toggleIcon');
-                const container   = document.querySelector('.container');
-                const mobile      = window.innerWidth <= 768;
-
-                if (mobile) {
-                  // mobile → start collapsed, show main content
-                  sidebar.style.width       = '0';
-                  mainContent.style.display = 'flex';
-                   mainContent.style.width   = '100%';
-                  toggleIcon.classList.replace('fa-chevron-left','fa-chevron-right');
-                  container.classList.add('no-gap');
-                } else {
-                  // desktop → start expanded, always show both panels
-                  sidebar.style.width       = '25%';
-                  mainContent.style.display = 'flex';
-                  mainContent.style.width   = '75%';
-                  toggleIcon.classList.replace('fa-chevron-right','fa-chevron-left');
-                  container.classList.remove('no-gap');
-                }
-              }
-
-              function toggleSidebar() {
-                const sidebar     = document.getElementById('sidebar');
-                const mainContent = document.getElementById('mainContent');
-                const toggleBtn   = document.getElementById('toggleSidebarBtn');
-                const toggleIcon  = document.getElementById('toggleIcon');
-                const container   = document.querySelector('.container');
-                const mobile      = window.innerWidth <= 768;
-
-                const isHidden = !sidebar.style.width || sidebar.style.width === '0px';
-
-                if (isHidden) {
-                  // EXPAND
-                  sidebar.style.width = mobile ? '100%' : '25%';
-                  toggleBtn.title     = 'Hide Sidebar';
-                  toggleIcon.classList.replace('fa-chevron-right','fa-chevron-left');
-                  container.classList.remove('no-gap');
-
-                  if (mobile) {
-                    // on mobile, completely hide the main content
-                    mainContent.style.display = 'none';
-                  } else {
-                    mainContent.style.display = 'flex';
-                    mainContent.style.width   = '75%';
-                  }
-                } else {
-                  // COLLAPSE
-                  sidebar.style.width = '0';
-                  toggleBtn.title     = 'Show Sidebar';
-                  toggleIcon.classList.replace('fa-chevron-left','fa-chevron-right');
-                  container.classList.add('no-gap');
-
-                  // always restore main content
-                  mainContent.style.display = 'flex';
-                  mainContent.style.width   = mobile ? '100%' : '100%';
-                }
-              }
-
-              document.addEventListener('DOMContentLoaded', initSidebar);
-              window.addEventListener('resize', initSidebar);
-
-             function openPreviousChat(chatId) {
-                 window.location.href = '@Url.Action("ViewChat", "Chat")?id=' + chatId;
-             }
-
-        </script>
-
+        <!-- Main Content -->
         <div class="main-content" id="mainContent">
-            <div class="chat-header">Chat With Data</div>
-            <form id="imageUploadForm" enctype="multipart/form-data" style="margin-bottom: 1rem;">
-                <label for="imageFile" class="upload-label">Upload Image for Analysis</label>
-                <div class="upload-row">
-                    <input type="file" id="imageFile" name="file" accept="image/*" required />
-                    <button type="submit" class="upload-button">Analyze Image</button>
-                </div>
-            </form>
+            @* <h2 class="chat-header">Chat With Data</h2> *@
 
+            <!-- Image Upload Form -->
+            <form method="post"
+                  asp-action="ChatWithData"
+                  asp-controller="Chat"
+                  enctype="multipart/form-data"
+                  class="chat-input">
 
-
-            <form method="post" asp-action="ChatWithData" asp-controller="Chat" class="chat-input">
                 <div class="input-container">
-                    <textarea id="UserInput" name="UserInput" placeholder="Ask a question..." required></textarea>
+                    <!-- new wrapper around textarea + label -->
+                    <div class="textarea-wrapper">
+                        <textarea id="UserInput"
+                                  name="UserInput"
+                                  placeholder="Ask a question..."
+                                  required></textarea>
+
+                        <label for="imageFile"
+                               class="file-label"
+                               aria-label="Attach an image">  <img src="/images/uploadfilepng.png" /> </label>
+                    </div>
+
+                    <!-- hidden file picker -->
+                    <input type="file"
+                           id="imageFile"
+                           name="file"
+                           accept="image/*"
+                           class="file-input" />
+
+                    <!-- send button moves here -->
                     <button type="submit" class="send-button">Send</button>
-                </div>
 
-
-                <div id="imageAnalysisResult" class="analysis-result" style="margin-top: 20px;"></div>
-
-
-                @* Preserve history inputs *@
+                <!-- Preserve Chat History -->
                 @if (Model.ChatHistory != null)
                 {
-                    for (var i = 0; i < Model.ChatHistory.Count; i++)
+                    @for (int i = 0; i < Model.ChatHistory.Count; i++)
                     {
-                        <input type="hidden" name="ChatHistory[@i].Role" value="@Model.ChatHistory[i].Role" />
-                        <input type="hidden" name="ChatHistory[@i].Content" value="@Model.ChatHistory[i].Content" />
-                        <input type="hidden" name="ChatHistory[@i].Timestamp" value="@Model.ChatHistory[i].Timestamp.ToString("o")" />
+                        <input type="hidden"
+                               name="ChatHistory[@i].Role"
+                               value="@Model.ChatHistory[i].Role" />
+                        <input type="hidden"
+                               name="ChatHistory[@i].Content"
+                               value="@Model.ChatHistory[i].Content" />
+                        <input type="hidden"
+                               name="ChatHistory[@i].Timestamp"
+                               value="@Model.ChatHistory[i].Timestamp.ToString("o")" />
                     }
                 }
+                </div>
             </form>
-            <script>
-                                 // Function to set focus and move the cursor to the start
-                function setFocusAndCursor() {
-                    const userInput = document.getElementById("UserInput");
-                    userInput.focus(); // Focus the textarea
-                    // userInput.setSelectionRange(0, 0); // Move the cursor to the start of the text
-                }
 
-                // Ensure focus and cursor position when page is loaded
-                document.addEventListener('DOMContentLoaded', function() {
-                    setFocusAndCursor(); // Set focus and cursor to the start when the page reloads
-                });
+            <!-- Image Analysis Result -->
+            <div id="imageAnalysisResult" class="analysis-result"></div>
 
-                // Set focus and cursor position after submitting the form
-                document.querySelector("form").addEventListener("submit", function() {
-                    setTimeout(function() {
-                        setFocusAndCursor();
-                    }, 0);
-                });
-
-                // Set focus and cursor position after clicking the send button
-                document.querySelector('.send-button').addEventListener('click', function() {
-                    const userInput = document.getElementById("UserInput");
-                    setTimeout(function() {
-                        setFocusAndCursor();
-                    }, 0);
-                });
-
-
-            </script>
-            <script>
-                document.getElementById("imageUploadForm").addEventListener("submit", async function (e) {
-                    e.preventDefault();
-
-                    const fileInput = document.getElementById("imageFile");
-                    const resultDiv = document.getElementById("imageAnalysisResult");
-
-                    if (!fileInput.files.length) {
-                        resultDiv.innerText = "Please select an image file.";
-                        return;
-                    }
-
-                    const formData = new FormData();
-                    formData.append("file", fileInput.files[0]);
-
-                    resultDiv.innerText = "Analyzing image, please wait...";
-
-                    try {
-                        const response = await fetch("/api/image/extract-and-process", {
-                            method: "POST",
-                            body: formData
-                        });
-
-                        if (!response.ok) {
-                            throw new Error("Image analysis failed.");
-                        }
-
-                        const result = await response.json();
-
-                                       resultDiv.innerHTML = `
-                    <li class="chat-message">
-                        <img src="/images/navbar-brand.png"
-                             alt="Assistant Avatar"
-                             class="avatar assistant" />
-                        <div class="chat-bubble assistant-message">
-                            <span>
-                                <strong>Extracted Text:</strong><br/>${result.extractedText}<br/><br/>
-                                <strong>ChatGPT Response:</strong><br/>${result.chatGptResponse}
-                            </span>
-                            <div class="chat-meta">
-                                Assistant • ${new Date().toLocaleString()}
-                            </div>
-                        </div>
-                    </li>
-                `;
-
-                    } catch (error) {
-                        resultDiv.innerText = "Error: " + error.message;
-                    }
-                });
-            </script>
-
+            <!-- Chat History -->
             @if (Model.ChatHistory?.Any() == true)
             {
-                <div class="chat-history-header">Chat History</div>
+                <h3 class="chat-history-header">Chat History</h3>
                 <ul class="chat-history">
                     @{
                         var pairs = Model.ChatHistory
@@ -277,16 +137,16 @@
                             User = g.First().msg,
                             Assistant = g.Skip(1).FirstOrDefault()?.msg
                         })
+                        .Reverse()
                         .ToList();
-
-                        pairs.Reverse();
                     }
 
                     @foreach (var p in pairs)
                     {
-                        <!-- User message -->
                         <li class="chat-message">
-                            <div class="avatar user">@user.FirstName[0]@user.LastName[0]</div>
+                            <div class="avatar user">
+                                @user.FirstName[0]@user.LastName[0]
+                            </div>
                             <div class="chat-bubble user-message">
                                 <span>@p.User.Content</span>
                                 <div class="chat-meta">
@@ -297,7 +157,6 @@
 
                         @if (p.Assistant != null)
                         {
-                            <!-- Assistant message -->
                             <li class="chat-message">
                                 <img src="/images/navbar-brand.png"
                                      alt="Assistant Avatar"
@@ -319,16 +178,15 @@
                             </li>
                         }
 
-                        <li class="separator">
-                            <hr class="chat-separator" />
-                        </li>
+                        <li class="separator"><hr class="chat-separator" /></li>
                     }
                 </ul>
             }
 
+            <!-- Data Output -->
             @if (Model.Data?.Any() == true)
             {
-                <div class="chat-history-header">Data Output</div>
+                <h3 class="chat-history-header">Data Output</h3>
                 <table class="table">
                     <thead>
                         <tr><th>Column</th><th>Value</th></tr>
@@ -336,7 +194,10 @@
                     <tbody>
                         @foreach (var row in Model.Data)
                         {
-                            <tr><td>@row.ColumnName</td><td>@row.Value</td></tr>
+                            <tr>
+                                <td>@row.ColumnName</td>
+                                <td>@row.Value</td>
+                            </tr>
                         }
                     </tbody>
                 </table>
@@ -345,13 +206,108 @@
     </div>
 </div>
 
-<script>
-    // Listen for the Enter key press to submit the form and trigger the send button click
-    document.querySelector('textarea').addEventListener('keydown', function(event) {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault(); // Prevent the default behavior (new line)
-            document.querySelector('.send-button').click(); // Trigger click on Send button
-        }
-    });
-</script>
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Sidebar setup
+            initSidebar();
+            setFocus();
 
+            // Send on Enter (without Shift)
+            document.getElementById('UserInput').addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    document.querySelector('.send-button').click();
+                }
+            });
+
+            // IMAGE AUTO-ANALYSIS
+            const fileInput = document.getElementById('imageFile');
+            const resultDiv  = document.getElementById('imageAnalysisResult');
+
+            async function analyzeImage(file) {
+                resultDiv.innerText = 'Analyzing image, please wait…';
+                const form = new FormData();
+                form.append('file', file);
+
+                try {
+                    const res = await fetch('/api/image/extract-and-process', {
+                        method: 'POST',
+                        body: form
+                    });
+                    if (!res.ok) throw new Error('Image analysis failed.');
+
+                    const { extractedText, chatGptResponse } = await res.json();
+                    resultDiv.innerHTML = `
+                        <li class="chat-message">
+                            <img src="/images/navbar-brand.png" alt="Assistant Avatar" class="avatar assistant" />
+                            <div class="chat-bubble assistant-message">
+                                <strong>ChatGPT Response:</strong><br>${chatGptResponse}
+                                <div class="chat-meta">
+                                    Assistant • ${new Date().toLocaleString()}
+                                </div>
+                            </div>
+                        </li>`;
+                } catch (err) {
+                    resultDiv.innerText = 'Error: ' + err.message;
+                }
+            }
+
+            // Listen for file selection and kick off analysis
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length) {
+                    analyzeImage(fileInput.files[0]);
+                } else {
+                    resultDiv.innerText = 'Please select an image file.';
+                }
+            });
+        });
+
+        // OPTIONAL: if your initSidebar, toggleSidebar, openPreviousChat, etc.
+        // are defined elsewhere, leave them. Otherwise include them here:
+
+        function initSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const main    = document.getElementById('mainContent');
+            const icon    = document.getElementById('toggleIcon');
+            const mobile  = window.innerWidth <= 768;
+
+            if (mobile) {
+                sidebar.style.width = '0';
+                main.style.width    = '100%';
+                icon.classList.replace('fa-chevron-left','fa-chevron-right');
+            } else {
+                sidebar.style.width = '25%';
+                main.style.width    = '75%';
+                icon.classList.replace('fa-chevron-right','fa-chevron-left');
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const main    = document.getElementById('mainContent');
+            const icon    = document.getElementById('toggleIcon');
+            const mobile  = window.innerWidth <= 768;
+            const hidden  = sidebar.offsetWidth === 0;
+
+            if (hidden) {
+                sidebar.style.width = mobile ? '100%' : '25%';
+                main.style.display  = mobile ? 'none' : 'flex';
+                icon.classList.replace('fa-chevron-right','fa-chevron-left');
+            } else {
+                sidebar.style.width = '0';
+                main.style.display   = 'flex';
+                main.style.width     = '100%';
+                icon.classList.replace('fa-chevron-left','fa-chevron-right');
+            }
+        }
+
+        function openPreviousChat(id) {
+            window.location.href = '@Url.Action("ViewChat", "Chat")?id=' + id;
+        }
+
+        function setFocus() {
+            document.getElementById('UserInput').focus();
+        }
+    </script>
+}
