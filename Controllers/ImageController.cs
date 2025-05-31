@@ -35,7 +35,7 @@ namespace db_query_v1._0._0._1.Controllers
             var extractedText = _ocrService.ExtractTextFromImage(tempImagePath);
 
             // Process the extracted text using ChatGPT
-            var chatGptResponse = await _chatGptService.GetChatGptResponse($"Extracted text: {extractedText}. Analyze and summarize this text.");
+            var chatGptResponse = await _chatGptService.GetChatGptResponse($"Extracted text: {extractedText}. Analyze and print the text by fixing typos or potential missing letters.");
 
             // Clean up the temporary file
             System.IO.File.Delete(tempImagePath);

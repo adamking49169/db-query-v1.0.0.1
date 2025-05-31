@@ -465,7 +465,7 @@ textarea {
     border-radius: 1rem;
     padding: 1.25rem;
     font-size: 1.125rem;
-    background-color: #f9fafb;
+    background-color: #e1e1e6;
     box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.06);
     resize: vertical;
     transition: box-shadow 0.3s, background-color 0.3s;
@@ -489,9 +489,10 @@ textarea {
 
     .chat-input textarea:focus {
         outline: none;
-        background-color: #ffffff;
+        background-color: #e1e1e6;
         box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
         margin-left: 10px;
+        margin-right: 10px;
     }
 
     .chat-input textarea::placeholder {
@@ -649,6 +650,7 @@ textarea {
     width: 90%; /* Adjust width */
     padding: 8px;
     margin-bottom: 15px;
+    margin-top:10px;
     border-radius: 4px;
     border: 1px solid #ddd;
     align-items: center;
@@ -856,9 +858,9 @@ textarea {
     color: #fff;
     font-size: 1.25rem;
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
     margin-right: 0.5rem;
+    background-color: #e1e1e6;
 }
 
 .chat-input .file-label {
@@ -904,4 +906,80 @@ textarea {
 /* hide the real file-input */
 .file-input {
     display: none;
+}
+/* ----------------------------------------------
+   Sidebar Top Controls (Toggle + Search Bar)
+   ---------------------------------------------- */
+.sidebar-top-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* small space between button and input */
+    padding: 0.75rem 1rem; /* optional: space around the controls */
+}
+
+/* Shrink the toggle-button so it doesn't force its own line */
+.toggle-sidebar-btn {
+    /* Remove any margins that drove it to a new line */
+    margin: 0;
+    padding: 0.5rem; /* you can adjust as needed */
+    font-size: 1rem; /* ensure icon is visible */
+    background-color: transparent; /* if you prefer a minimalist look */
+    border: none;
+    color: #fff; /* or any color that contrasts with your sidebar background */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+    .toggle-sidebar-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+/* Now make sure the search bar doesn’t force a new line */
+.search-bar {
+    flex: 1; /* expand to fill remaining space */
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.25rem;
+    border: 1px solid #555; /* tweak as you like */
+    background-color: #333; /* dark bg to match sidebar */
+    color: #fff;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+    .search-bar:focus {
+        border-color: #777; /* highlight when focused */
+        background-color: #444;
+    }
+
+/* If you have an existing .sidebar padding that pushes children apart,
+   make sure to adjust so the top controls look good. For instance: */
+
+.sidebar {
+    /* example existing rules */
+    /* background-color: #292A2D; */
+    /* border-radius: 1rem; */
+    transition: width 0.3s ease;
+    /* Add a tiny padding so contents don’t hug the edges */
+    padding-top: 0.5rem;
+}
+
+/* RESPONSIVE: On very small screens, keep them stacked if needed */
+@media (max-width: 480px) {
+    .sidebar-top-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toggle-sidebar-btn {
+        align-self: flex-start;
+    }
+
+    .search-bar {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
 }
