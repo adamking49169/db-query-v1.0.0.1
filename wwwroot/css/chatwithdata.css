@@ -491,8 +491,8 @@ textarea {
         outline: none;
         background-color: #e1e1e6;
         box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
-        margin-left: 10px;
-        margin-right: 10px;
+     /*   margin-left: 10px;
+        margin-right: 10px;*/
     }
 
     .chat-input textarea::placeholder {
