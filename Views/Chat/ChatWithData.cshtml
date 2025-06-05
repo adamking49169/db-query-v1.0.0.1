@@ -1,4 +1,4 @@
-﻿@using Models
+﻿﻿@using Models
 @model ChatModel
 
 @{
@@ -100,23 +100,24 @@
 
                     <!-- send button moves here -->
                     <button type="submit" class="send-button">Send</button>
+                    <input type="hidden" id="OcrTextInput" name="OcrText" value="@Model.OcrText" />
 
-                <!-- Preserve Chat History -->
-                @if (Model.ChatHistory != null)
-                {
-                    @for (int i = 0; i < Model.ChatHistory.Count; i++)
+                    <!-- Preserve Chat History -->
+                    @if (Model.ChatHistory != null)
                     {
-                        <input type="hidden"
-                               name="ChatHistory[@i].Role"
-                               value="@Model.ChatHistory[i].Role" />
-                        <input type="hidden"
-                               name="ChatHistory[@i].Content"
-                               value="@Model.ChatHistory[i].Content" />
-                        <input type="hidden"
-                               name="ChatHistory[@i].Timestamp"
-                               value="@Model.ChatHistory[i].Timestamp.ToString("o")" />
+                        @for (int i = 0; i < Model.ChatHistory.Count; i++)
+                        {
+                            <input type="hidden"
+                                   name="ChatHistory[@i].Role"
+                                   value="@Model.ChatHistory[i].Role" />
+                            <input type="hidden"
+                                   name="ChatHistory[@i].Content"
+                                   value="@Model.ChatHistory[i].Content" />
+                            <input type="hidden"
+                                   name="ChatHistory[@i].Timestamp"
+                                   value="@Model.ChatHistory[i].Timestamp.ToString("o")" />
+                        }
                     }
-                }
                 </div>
             </form>
 
@@ -224,6 +225,13 @@
             // IMAGE AUTO-ANALYSIS
             const fileInput = document.getElementById('imageFile');
             const resultDiv  = document.getElementById('imageAnalysisResult');
+            const ocrHidden = document.getElementById('OcrTextInput');
+            let storedOcrText = ocrHidden.value || '';
+            const formElem = document.querySelector('.chat-input');
+
+            formElem.addEventListener('submit', () => {
+                ocrHidden.value = storedOcrText;
+            });
 
             async function analyzeImage(file) {
                 resultDiv.innerText = 'Analyzing image, please wait…';
@@ -238,16 +246,8 @@
                     if (!res.ok) throw new Error('Image analysis failed.');
 
                     const { extractedText, chatGptResponse } = await res.json();
-                    resultDiv.innerHTML = `
-                        <li class="chat-message">
-                            <img src="/images/navbar-brand.png" alt="Assistant Avatar" class="avatar assistant" />
-                            <div class="chat-bubble assistant-message">
-                                <strong>ChatGPT Response:</strong><br>${chatGptResponse}
-                                <div class="chat-meta">
-                                    Assistant • ${new Date().toLocaleString()}
-                                </div>
-                            </div>
-                        </li>`;
+                    storedOcrText = chatGptResponse; // store OCR text for later use
+                    resultDiv.innerText = 'Image text extracted and stored.';
                 } catch (err) {
                     resultDiv.innerText = 'Error: ' + err.message;
                 }

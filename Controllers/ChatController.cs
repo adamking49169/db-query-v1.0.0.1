@@ -144,6 +144,7 @@ namespace db_query_v1._0._0._1.Controllers
                 PasscodeValidated = true,
                 UsingDummyData = false,
                 UserInput = string.Empty,
+                OcrText = string.Empty,
                 ChatHistory = new List<ChatHistoryItem>(),
                 Data = new List<DataRow>(),
                 PreviousChats = _db.PreviousChats
@@ -188,8 +189,14 @@ namespace db_query_v1._0._0._1.Controllers
             };
             _db.ChatHistoryItems.Add(userMessage);
 
+            // Include OCR text if provided so the user can reference it
+            var fullUserInput = model.UserInput;
+            if (!string.IsNullOrWhiteSpace(model.OcrText))
+            {
+                fullUserInput += "\n\nOCR Text:\n" + model.OcrText;
+            }
             // Fetch the AI response
-            var aiResponse = await GetOpenAiResponseStreamed(model.UserInput, user);
+            var aiResponse = await GetOpenAiResponseStreamed(fullUserInput, user);
 
             // Create and track the assistant's reply, also linked to the same session
             var assistantMessage = new ChatHistoryItem

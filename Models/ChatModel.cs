@@ -8,6 +8,7 @@ namespace Models
     public class ChatModel
     {
         public string UserInput { get; set; }
+        public string OcrText { get; set; } = string.Empty;
         public List<ChatHistoryItem> ChatHistory { get; set; } = new();
         public List<DataRow> Data { get; set; } = new();
         public bool PasscodeValidated { get; set; }
