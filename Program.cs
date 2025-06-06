@@ -55,6 +55,7 @@ namespace db_query_v1._0._0._1
 
             // OCR & ChatGPT
             builder.Services.AddSingleton<OcrService>();
+            builder.Services.AddSingleton<OpenAIService>();
             builder.Services.AddHttpClient<ChatGptService>();
             builder.Services.AddSingleton(sp => new ChatGptService(
                 sp.GetRequiredService<HttpClient>(),

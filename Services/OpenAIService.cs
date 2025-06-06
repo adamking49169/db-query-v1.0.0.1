@@ -1,12 +1,19 @@
-﻿using OpenAI_API;
+﻿using Microsoft.Extensions.Configuration;
+using OpenAI_API;
 
 public class OpenAIService
 {
     private readonly OpenAIAPI _api;
 
-    public OpenAIService()
+    public OpenAIService(IConfiguration configuration)
     {
-        _api = new OpenAIAPI("sk-proj-TQTlyjvM1QCZskEB4sCtT3BlbkFJmJxQLcOt1pOBPTpX9W1X");
+        var apiKey = configuration["OPENAI_API_KEY"] ??
+                     Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            throw new InvalidOperationException("OpenAI API key not configured.");
+        }
+        _api = new OpenAIAPI(apiKey);
     }
 
     public async Task<string> AskAsync(string prompt)
