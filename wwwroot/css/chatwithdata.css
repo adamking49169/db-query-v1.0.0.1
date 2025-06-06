@@ -8,6 +8,23 @@
     overflow: hidden;
 }
 
+.image-generation {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.image-prompt-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#imagePromptInput {
+    width: 100%;
+    max-width: 400px;
+}
+
 .white-text {
     color: white;
 }
