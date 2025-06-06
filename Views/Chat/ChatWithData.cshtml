@@ -184,7 +184,7 @@
                 </ul>
             }
 
-            <!-- Image Generation from Prompt -->
+          @*   <!-- Image Generation from Prompt -->
             <div class="image-generation">
                 <h3 class="chat-history-header">Generate Image</h3>
                 <div class="image-prompt-controls">
@@ -197,7 +197,7 @@
                             class="btn btn-primary mt-2">Generate</button>
                 </div>
                 <div id="generatedImageContainer" class="assistant-image mt-3"></div>
-            </div>
+            </div> *@
 
             <!-- Data Output -->
             @if (Model.Data?.Any() == true)
@@ -277,31 +277,31 @@
                 }
             });
 
-            // IMAGE GENERATION
-            const promptInput = document.getElementById('imagePromptInput');
-            const generateBtn = document.getElementById('imageGenerateBtn');
-            const generatedContainer = document.getElementById('generatedImageContainer');
+            // // IMAGE GENERATION
+            // const promptInput = document.getElementById('imagePromptInput');
+            // const generateBtn = document.getElementById('imageGenerateBtn');
+            // const generatedContainer = document.getElementById('generatedImageContainer');
 
-            generateBtn.addEventListener('click', async () => {
-                const prompt = promptInput.value.trim();
-                if (!prompt) return;
+            // generateBtn.addEventListener('click', async () => {
+            //     const prompt = promptInput.value.trim();
+            //     if (!prompt) return;
 
-                generatedContainer.innerText = 'Generating image...';
+            //     generatedContainer.innerText = 'Generating image...';
 
-                try {
-                    const res = await fetch('/api/image/generate-from-prompt', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ prompt })
-                    });
-                    if (!res.ok) throw new Error('Image generation failed.');
+            //     try {
+            //         const res = await fetch('/api/image/generate-from-prompt', {
+            //             method: 'POST',
+            //             headers: { 'Content-Type': 'application/json' },
+            //             body: JSON.stringify({ prompt })
+            //         });
+            //         if (!res.ok) throw new Error('Image generation failed.');
 
-                    const { imageUrl } = await res.json();
-                    generatedContainer.innerHTML = `<img src="${imageUrl}" alt="Generated image" />`;
-                } catch (err) {
-                    generatedContainer.innerText = 'Error: ' + err.message;
-                }
-            });
+            //         const { imageUrl } = await res.json();
+            //         generatedContainer.innerHTML = `<img src="${imageUrl}" alt="Generated image" />`;
+            //     } catch (err) {
+            //         generatedContainer.innerText = 'Error: ' + err.message;
+            //     }
+            // });
         });
 
         // OPTIONAL: if your initSidebar, toggleSidebar, openPreviousChat, etc.
