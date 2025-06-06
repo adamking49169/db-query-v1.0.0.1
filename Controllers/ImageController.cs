@@ -30,20 +30,16 @@ namespace db_query_v1._0._0._1.Controllers
             }
 
             // Save the uploaded image to a temporary file
-            var tempImagePath = Path.GetTempFileName();
-            using (var stream = new FileStream(tempImagePath, FileMode.Create))
+            string extractedText;
+            using (var stream = file.OpenReadStream())
             {
-                await file.CopyToAsync(stream);
+                extractedText = _ocrService.ExtractTextFromImage(stream);
             }
 
-            // Extract text from the image
-            var extractedText = _ocrService.ExtractTextFromImage(tempImagePath);
 
             // Process the extracted text using ChatGPT
             var chatGptResponse = extractedText;
 
-            // Clean up the temporary file
-            System.IO.File.Delete(tempImagePath);
 
             return Ok(new
             {
