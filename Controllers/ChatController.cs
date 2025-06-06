@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
 using System.Text;
 using static db_query_v1._0._0._1.Data.ApplicationDbContext;
+using db_query_v1._0._0._1.Services;
 
 namespace db_query_v1._0._0._1.Controllers
 {
@@ -21,16 +22,19 @@ namespace db_query_v1._0._0._1.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _db;
+        private readonly WebSearchService _webSearch;
         private int _apiRequestCount = 0;
 
         public ChatController(
             IHttpClientFactory httpClientFactory,
             UserManager<ApplicationUser> userManager,
-            ApplicationDbContext db)
+            ApplicationDbContext db,
+             WebSearchService webSearch)
         {
             _httpClientFactory = httpClientFactory;
             _userManager = userManager;
             _db = db;
+            _webSearch = webSearch;
         }
 
         private async Task<List<PreviousChat>> ChatSummaries()
@@ -142,6 +146,7 @@ namespace db_query_v1._0._0._1.Controllers
             {
                 PasscodeValidated = true,
                 UsingDummyData = false,
+                SearchWeb = false,
                 UserInput = string.Empty,
                 OcrText = string.Empty,
                 ChatHistory = new List<ChatHistoryItem>(),
@@ -191,6 +196,16 @@ namespace db_query_v1._0._0._1.Controllers
             {
                 fullUserInput += "\n\nOCR Text:\n" + model.OcrText;
             }
+
+            if (model.SearchWeb)
+            {
+                var results = await _webSearch.SearchAsync(model.UserInput);
+                if (!string.IsNullOrWhiteSpace(results))
+                {
+                    fullUserInput += "\n\nWeb search results:\n" + results;
+                }
+            }
+
             // Fetch the AI response
             var aiResponse = await GetOpenAiResponseStreamed(fullUserInput, user);
 

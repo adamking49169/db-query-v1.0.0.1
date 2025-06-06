@@ -65,6 +65,9 @@ namespace db_query_v1._0._0._1
                 sp.GetRequiredService<HttpClient>(),
                 builder.Configuration["OPENAI_API_KEY"]));
 
+            builder.Services.AddHttpClient<WebSearchService>();
+            builder.Services.AddSingleton<WebSearchService>();
+
             // MVC & API
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();

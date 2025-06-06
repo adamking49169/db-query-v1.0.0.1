@@ -12,6 +12,7 @@ namespace Models
         public List<ChatHistoryItem> ChatHistory { get; set; } = new();
         public List<DataRow> Data { get; set; } = new();
         public bool PasscodeValidated { get; set; }
+        public bool SearchWeb { get; set; }
         public bool UsingDummyData { get; set; }
         public string Passcode { get; internal set; }
         public List<PreviousChat> PreviousChats { get; set; } = new();
