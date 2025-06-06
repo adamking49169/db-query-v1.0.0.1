@@ -59,6 +59,10 @@ namespace db_query_v1._0._0._1
             builder.Services.AddSingleton(sp => new ChatGptService(
                 sp.GetRequiredService<HttpClient>(),
                 builder.Configuration["OPENAI_API_KEY"]));
+            builder.Services.AddHttpClient<ImageGenerationService>();
+            builder.Services.AddSingleton(sp => new ImageGenerationService(
+                sp.GetRequiredService<HttpClient>(),
+                builder.Configuration["OPENAI_API_KEY"]));
 
             // MVC & API
             builder.Services.AddControllersWithViews();
