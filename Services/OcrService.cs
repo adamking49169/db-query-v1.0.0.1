@@ -17,23 +17,13 @@ namespace db_query_v1._0._0._1.Services
         }
         public string ExtractTextFromImage(string imagePath)
         {
-            using var img = Pix.LoadFromFile(imagePath);
-            using var page = _engine.Process(img);
-            return page.GetText();
-        }
-
-        public string ExtractTextFromImage(Stream imageStream)
-        {
-            using var memoryStream = new MemoryStream();
-            imageStream.CopyTo(memoryStream);
-            return ExtractTextFromImage(memoryStream.ToArray());
-        }
-
-        public string ExtractTextFromImage(byte[] imageData)
-        {
-            using var img = Pix.LoadFromMemory(imageData);
-            using var page = _engine.Process(img);
-            return page.GetText();
+            using (var img = Pix.LoadFromFile(imagePath))
+            {
+                using (var page = _engine.Process(img))
+                {
+                    return page.GetText();
+                }
+            }
         }
     }
 
