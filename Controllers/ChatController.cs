@@ -197,8 +197,8 @@ namespace db_query_v1._0._0._1.Controllers
                 fullUserInput += "\n\nOCR Text:\n" + model.OcrText;
             }
 
-            if (model.SearchWeb)
-            {
+            //if (model.SearchWeb)
+            //{
                 if (string.IsNullOrWhiteSpace(model.WebSearchResults))
                 {
                     var results = await _webSearch.SearchAsync(model.UserInput);
@@ -283,7 +283,7 @@ namespace db_query_v1._0._0._1.Controllers
                     .Take(10)
                     .ToListAsync();
 
-            }
+            //}
             return View(model);
 
         }

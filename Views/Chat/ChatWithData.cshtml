@@ -101,13 +101,13 @@
                     <!-- send button moves here -->
                     <button type="submit" class="send-button">Send</button>
 
-                    <label class="ms-2">
+                  @*   <label class="ms-2">
                         <input type="checkbox" name="SearchWeb" @(Model.SearchWeb ? "checked" : "") />
                         Search web
-                    </label>
+                    </label> *@
 
                     <input type="hidden" id="OcrTextInput" name="OcrText" value="@Model.OcrText" />
-                    <input type="hidden" id="WebResultsInput" name="WebSearchResults" value="@Model.WebSearchResults" />
+                    @* <input type="hidden" id="WebResultsInput" name="WebSearchResults" value="@Model.WebSearchResults" /> *@
 
                     <!-- Preserve Chat History -->
                     @if (Model.ChatHistory != null)
