@@ -184,6 +184,21 @@
                 </ul>
             }
 
+            <!-- Image Generation from Prompt -->
+            <div class="image-generation">
+                <h3 class="chat-history-header">Generate Image</h3>
+                <div class="image-prompt-controls">
+                    <input type="text"
+                           id="imagePromptInput"
+                           class="form-control"
+                           placeholder="Describe the desired image..." />
+                    <button type="button"
+                            id="imageGenerateBtn"
+                            class="btn btn-primary mt-2">Generate</button>
+                </div>
+                <div id="generatedImageContainer" class="assistant-image mt-3"></div>
+            </div>
+
             <!-- Data Output -->
             @if (Model.Data?.Any() == true)
             {
@@ -259,6 +274,32 @@
                     analyzeImage(fileInput.files[0]);
                 } else {
                     resultDiv.innerText = 'Please select an image file.';
+                }
+            });
+
+            // IMAGE GENERATION
+            const promptInput = document.getElementById('imagePromptInput');
+            const generateBtn = document.getElementById('imageGenerateBtn');
+            const generatedContainer = document.getElementById('generatedImageContainer');
+
+            generateBtn.addEventListener('click', async () => {
+                const prompt = promptInput.value.trim();
+                if (!prompt) return;
+
+                generatedContainer.innerText = 'Generating image...';
+
+                try {
+                    const res = await fetch('/api/image/generate-from-prompt', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt })
+                    });
+                    if (!res.ok) throw new Error('Image generation failed.');
+
+                    const { imageUrl } = await res.json();
+                    generatedContainer.innerHTML = `<img src="${imageUrl}" alt="Generated image" />`;
+                } catch (err) {
+                    generatedContainer.innerText = 'Error: ' + err.message;
                 }
             });
         });

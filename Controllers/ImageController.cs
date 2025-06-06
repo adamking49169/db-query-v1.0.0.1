@@ -1,5 +1,6 @@
 ﻿using db_query_v1._0._0._1.Services;
 using Microsoft.AspNetCore.Mvc;
+using db_query_v1._0._0._1.Models;
 
 namespace db_query_v1._0._0._1.Controllers
 {
@@ -9,11 +10,15 @@ namespace db_query_v1._0._0._1.Controllers
     {
         private readonly OcrService _ocrService;
         private readonly ChatGptService _chatGptService;
+        private readonly ImageGenerationService _imageGenerationService;
 
-        public ImageController(OcrService ocrService, ChatGptService chatGptService)
+        public ImageController(OcrService ocrService,
+                               ChatGptService chatGptService,
+                               ImageGenerationService imageGenerationService)
         {
             _ocrService = ocrService;
             _chatGptService = chatGptService;
+            _imageGenerationService = imageGenerationService;
         }
 
         [HttpPost("extract-and-process")]
@@ -45,6 +50,18 @@ namespace db_query_v1._0._0._1.Controllers
                 ExtractedText = extractedText,
                 ChatGptResponse = chatGptResponse
             });
+        }
+
+        [HttpPost("generate-from-prompt")]
+        public async Task<IActionResult> GenerateFromPrompt([FromBody] ImagePrompt request)
+        {
+            if (string.IsNullOrWhiteSpace(request?.Prompt))
+            {
+                return BadRequest("Prompt is required.");
+            }
+
+            var imageUrl = await _imageGenerationService.GenerateImageAsync(request.Prompt);
+            return Ok(new { ImageUrl = imageUrl });
         }
     }
 }
