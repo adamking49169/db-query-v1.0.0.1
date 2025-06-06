@@ -1,4 +1,4 @@
-﻿﻿@using Models
+﻿@using Models
 @model ChatModel
 
 @{
@@ -129,6 +129,7 @@
             {
                 @* <h3 class="chat-history-header">Chat History</h3> *@
                 <ul class="chat-history">
+                    @* Group the chat history into user/assistant pairs *@
                     @{
                         var pairs = Model.ChatHistory
                         .Select((msg, idx) => new { msg, idx })
@@ -184,7 +185,8 @@
                 </ul>
             }
 
-          @*   <!-- Image Generation from Prompt -->
+            @* 
+            <!-- Image Generation from Prompt -->
             <div class="image-generation">
                 <h3 class="chat-history-header">Generate Image</h3>
                 <div class="image-prompt-controls">
@@ -197,7 +199,8 @@
                             class="btn btn-primary mt-2">Generate</button>
                 </div>
                 <div id="generatedImageContainer" class="assistant-image mt-3"></div>
-            </div> *@
+            </div> 
+            *@
 
             <!-- Data Output -->
             @if (Model.Data?.Any() == true)
@@ -349,6 +352,20 @@
 
         function setFocus() {
             document.getElementById('UserInput').focus();
+        }
+
+        // Added searchChats function for filtering the "Previous Chats" list
+        function searchChats() {
+            const filter = document.getElementById('searchBar').value.toLowerCase();
+            const container = document.getElementById('chatListContainer');
+            if (!container) return;
+
+            const items = container.getElementsByClassName('history-item');
+            for (let i = 0; i < items.length; i++) {
+                const title = items[i].getAttribute('data-title') || '';
+                // Show or hide based on whether the title includes the filter text
+                items[i].style.display = title.toLowerCase().includes(filter) ? '' : 'none';
+            }
         }
     </script>
 }

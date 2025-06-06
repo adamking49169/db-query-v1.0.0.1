@@ -32,10 +32,11 @@ namespace db_query_v1._0._0._1.Controllers
             _userManager = userManager;
             _db = db;
         }
-       
-        private  List<PreviousChat> ChatSummaries()
+
+        private async Task<List<PreviousChat>> ChatSummaries()
         {
-            return _db.PreviousChats
+            return await _db.PreviousChats
+                .AsNoTracking()
                 .OrderByDescending(c => c.Date)
                 .Select(c => new PreviousChat
                 {
@@ -44,15 +45,16 @@ namespace db_query_v1._0._0._1.Controllers
                     UserIdentityId = c.UserIdentityId,
                     Id = c.Id
                 })
-                .ToList();
+                .ToListAsync();
         }
 
-        private Dictionary<int, List<ChatHistoryItem>> ChatHistories()
+        private async Task<Dictionary<int, List<ChatHistoryItem>>> ChatHistories()
         {
-            var chatHistories = _db.ChatHistoryItems
-                .Include(c => c.PreviousChat)  // Ensure we get the related PreviousChat data
+            var chatHistories = await _db.ChatHistoryItems
+               .AsNoTracking()
+               .Include(c => c.PreviousChat)  // Ensure we get the related PreviousChat data
                 .OrderBy(c => c.Timestamp)     // Sort messages by timestamp
-                .ToList();
+                .ToListAsync();
 
             // Group chat history items by ChatId
             var groupedHistories = chatHistories
@@ -68,13 +70,11 @@ namespace db_query_v1._0._0._1.Controllers
 
 
         // ③ Show the list of previous chats
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var model = new ChatModel
             {
-                PreviousChats = ChatSummaries() // Call the method using parentheses to invoke it
-                                                .OrderByDescending(c => c.Date)
-                                                .ToList()
+                 PreviousChats = await ChatSummaries()
             };
             return View(model);
         }
@@ -121,10 +121,10 @@ namespace db_query_v1._0._0._1.Controllers
             return View("ChatWithData", model);
         }
 
-        // ⑤ AJAX endpoint to fetch one chat’s partial
-        public IActionResult GetChat(int id)
+        public async Task<IActionResult> GetChat(int id)
         {
-            if (!ChatHistories().TryGetValue(id, out var messages))
+                var histories = await ChatHistories();
+            if (!histories.TryGetValue(id, out var messages))
                 return PartialView("_NotFound");
 
             var model = new ChatModel
@@ -135,9 +135,8 @@ namespace db_query_v1._0._0._1.Controllers
             return PartialView("_ChatDetails", model);
         }
 
-
         [HttpGet]
-        public IActionResult ChatWithData()
+        public async Task<IActionResult> ChatWithData()
         {
             var model = new ChatModel
             {
@@ -147,10 +146,7 @@ namespace db_query_v1._0._0._1.Controllers
                 OcrText = string.Empty,
                 ChatHistory = new List<ChatHistoryItem>(),
                 Data = new List<DataRow>(),
-                PreviousChats = _db.PreviousChats
-                    .OrderByDescending(pc => pc.Date)
-                    .Select(pc => new PreviousChat { Title = pc.Title, Date = pc.Date, UserIdentityId = pc.UserIdentityId, Id = pc.Id })
-                    .ToList()
+                PreviousChats = await ChatSummaries()
             };
 
             return View(model);
@@ -263,11 +259,11 @@ namespace db_query_v1._0._0._1.Controllers
                                      .ToList();
 
             // Reload the list of recent sessions
-            model.PreviousChats = _db.PreviousChats
+            model.PreviousChats = await _db.PreviousChats
                 .Where(pc => pc.UserIdentityId == userId)
                 .OrderByDescending(pc => pc.Date)
                 .Take(10)
-                .ToList();  // you can project if you need only Title/Date
+                .ToListAsync();  
 
             return View(model);
         }
