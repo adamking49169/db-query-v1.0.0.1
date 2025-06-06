@@ -13,6 +13,7 @@ namespace Models
         public List<DataRow> Data { get; set; } = new();
         public bool PasscodeValidated { get; set; }
         public bool SearchWeb { get; set; }
+        public string WebSearchResults { get; set; } = string.Empty;
         public bool UsingDummyData { get; set; }
         public string Passcode { get; internal set; }
         public List<PreviousChat> PreviousChats { get; set; } = new();

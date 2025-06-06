@@ -199,91 +199,96 @@ namespace db_query_v1._0._0._1.Controllers
 
             if (model.SearchWeb)
             {
-                var results = await _webSearch.SearchAsync(model.UserInput);
-                if (!string.IsNullOrWhiteSpace(results))
+                if (string.IsNullOrWhiteSpace(model.WebSearchResults))
                 {
-                    fullUserInput += "\n\nWeb search results:\n" + results;
+                    var results = await _webSearch.SearchAsync(model.UserInput);
+                    model.WebSearchResults = results;
                 }
-            }
-
-            // Fetch the AI response
-            var aiResponse = await GetOpenAiResponseStreamed(fullUserInput, user);
-
-            // Create and track the assistant's reply, also linked to the same session
-            var assistantMessage = new ChatHistoryItem
-            {
-                UserIdentityId = userId,
-                PreviousChat = previousChatEntry,
-                Role = "assistant",
-                Content = aiResponse,
-                Timestamp = DateTime.UtcNow,
-                ImageUrl = ""
-            };
-            _db.ChatHistoryItems.Add(assistantMessage);
-
-            // Log the assistant reply to ChatResponseLog (unchanged)
-            var logEntry = new ChatResponseLog
-            {
-                Role = assistantMessage.Role,
-                Content = assistantMessage.Content,
-                Timestamp = assistantMessage.Timestamp
-            };
-            _db.ChatResponseLogs.Add(logEntry);
-
-            // Optionally run a SELECT and populate model.Data
-            model.Data = new List<DataRow>();
-            var sql = model.UserInput?.Trim();
-            if (!string.IsNullOrEmpty(sql) && sql.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
-            {
-                try
+                if (!string.IsNullOrWhiteSpace(model.WebSearchResults))
                 {
-                    using var connection = _db.Database.GetDbConnection();
-                    await connection.OpenAsync();
-                    using var command = connection.CreateCommand();
-                    command.CommandText = sql;
+                    fullUserInput += "\n\nWeb search results:\n" + model.WebSearchResults;
+                }
 
-                    using var reader = await command.ExecuteReaderAsync();
-                    while (await reader.ReadAsync())
+                // Fetch the AI response
+                var aiResponse = await GetOpenAiResponseStreamed(fullUserInput, user);
+
+                // Create and track the assistant's reply, also linked to the same session
+                var assistantMessage = new ChatHistoryItem
+                {
+                    UserIdentityId = userId,
+                    PreviousChat = previousChatEntry,
+                    Role = "assistant",
+                    Content = aiResponse,
+                    Timestamp = DateTime.UtcNow,
+                    ImageUrl = ""
+                };
+                _db.ChatHistoryItems.Add(assistantMessage);
+
+                // Log the assistant reply to ChatResponseLog (unchanged)
+                var logEntry = new ChatResponseLog
+                {
+                    Role = assistantMessage.Role,
+                    Content = assistantMessage.Content,
+                    Timestamp = assistantMessage.Timestamp
+                };
+                _db.ChatResponseLogs.Add(logEntry);
+
+                // Optionally run a SELECT and populate model.Data
+                model.Data = new List<DataRow>();
+                var sql = model.UserInput?.Trim();
+                if (!string.IsNullOrEmpty(sql) && sql.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
                     {
-                        for (int i = 0; i < reader.FieldCount; i++)
+                        using var connection = _db.Database.GetDbConnection();
+                        await connection.OpenAsync();
+                        using var command = connection.CreateCommand();
+                        command.CommandText = sql;
+
+                        using var reader = await command.ExecuteReaderAsync();
+                        while (await reader.ReadAsync())
                         {
-                            model.Data.Add(new DataRow
+                            for (int i = 0; i < reader.FieldCount; i++)
                             {
-                                ColumnName = reader.GetName(i),
-                                Value = reader.GetValue(i)?.ToString() ?? string.Empty
-                            });
+                                model.Data.Add(new DataRow
+                                {
+                                    ColumnName = reader.GetName(i),
+                                    Value = reader.GetValue(i)?.ToString() ?? string.Empty
+                                });
+                            }
                         }
                     }
+                    catch (SqlException ex)
+                    {
+                        ModelState.AddModelError("Data", "SQL error: " + ex.Message);
+                    }
                 }
-                catch (SqlException ex)
-                {
-                    ModelState.AddModelError("Data", "SQL error: " + ex.Message);
-                }
+
+                // Commit all of the above in one shot
+                await _db.SaveChangesAsync();
+
+                // Rebuild the in-memory history for the view
+                model.ChatHistory ??= new List<ChatHistoryItem>();
+                model.ChatHistory.Add(userMessage);
+                model.ChatHistory.Add(assistantMessage);
+                if (model.ChatHistory.Count > 20)
+                    model.ChatHistory = model.ChatHistory
+                                         .Skip(model.ChatHistory.Count - 20)
+                                         .ToList();
+
+                // Reload the list of recent sessions
+                model.PreviousChats = await _db.PreviousChats
+                    .Where(pc => pc.UserIdentityId == userId)
+                    .OrderByDescending(pc => pc.Date)
+                    .Take(10)
+                    .ToListAsync();
+
             }
-
-            // Commit all of the above in one shot
-            await _db.SaveChangesAsync();
-
-            // Rebuild the in-memory history for the view
-            model.ChatHistory ??= new List<ChatHistoryItem>();
-            model.ChatHistory.Add(userMessage);
-            model.ChatHistory.Add(assistantMessage);
-            if (model.ChatHistory.Count > 20)
-                model.ChatHistory = model.ChatHistory
-                                     .Skip(model.ChatHistory.Count - 20)
-                                     .ToList();
-
-            // Reload the list of recent sessions
-            model.PreviousChats = await _db.PreviousChats
-                .Where(pc => pc.UserIdentityId == userId)
-                .OrderByDescending(pc => pc.Date)
-                .Take(10)
-                .ToListAsync();  
-
             return View(model);
+
         }
 
-       
+
         private async Task<string> GetOpenAiResponseStreamed(string userInput, ApplicationUser appUser)
         {
             var client = _httpClientFactory.CreateClient("OpenAI");
