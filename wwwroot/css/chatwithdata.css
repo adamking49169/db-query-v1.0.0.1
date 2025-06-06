@@ -8,6 +8,23 @@
     overflow: hidden;
 }
 
+.image-generation {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.image-prompt-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#imagePromptInput {
+    width: 100%;
+    max-width: 400px;
+}
+
 .white-text {
     color: white;
 }
@@ -60,7 +77,7 @@
 }
 
 .assistant-image img {
-    width: 120px;
+    width: 256px;
     height: auto;
     border-radius: 4px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
