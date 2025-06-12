@@ -21,7 +21,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.15" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure.Authentication" Version="2.4.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
-    <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="OpenAI" Version="1.11.0" />
     <PackageReference Include="ScottPlot" Version="5.0.55" />
@@ -29,15 +28,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="8.1.1" />
     <PackageReference Include="System.Net.Http.Json" Version="9.0.5" />
     <PackageReference Include="Tesseract" Version="5.2.0" />
-    <PackageReference Include="xunit.assert" Version="2.9.3" />
-    <PackageReference Include="xunit.extensibility.core" Version="2.9.3" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="tessdata/**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="tests\DbQuery.Tests.csproj" />
   </ItemGroup>
 </Project>
