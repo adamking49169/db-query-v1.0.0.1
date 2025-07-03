@@ -68,22 +68,27 @@ namespace db_query_v1._0._0._1
             builder.Services.AddHttpClient<WebSearchService>();
             builder.Services.AddSingleton<WebSearchService>();
 
+            builder.Services.AddHttpClient<WebSearchService>(client =>
+            {
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; Bot/1.0)");
+            });
+
             // MVC & API
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
             builder.Services.AddControllers();
 
             // Swagger
-            //builder.Services.AddEndpointsApiExplorer();
-            //builder.Services.AddSwaggerGen(c =>
-            //{
-            //    c.SwaggerDoc("v1", new OpenApiInfo
-            //    {
-            //        Title = "My API",
-            //        Version = "v1",
-            //        Description = "Describe your API here"
-            //    });
-            //});
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "My API",
+                    Version = "v1",
+                    Description = "Describe your API here"
+                });
+            });
 
             // Sessions & Cookies
             builder.Services.AddSession();
@@ -118,31 +123,31 @@ namespace db_query_v1._0._0._1
             // Automatically open Swagger on IIS Express
             app.Lifetime.ApplicationStarted.Register(() =>
             {
-                //string url = null;
-                //// Kestrel
-                //var addresses = app.Services.GetService<IServerAddressesFeature>()?.Addresses;
-                //var address = addresses?.FirstOrDefault();
-                //if (!string.IsNullOrEmpty(address))
-                //{
-                //    url = address.TrimEnd('/') + "/swagger";
-                //}
-                //else
-                //{
-                //    // IIS Express
-                //    var port = Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORT");
-                //    if (!string.IsNullOrEmpty(port))
-                //    {
-                //        url = $"https://localhost:{port}/swagger";
-                //    }
-                //}
-                //if (!string.IsNullOrEmpty(url))
-                //{
-                //    try
-                //    {
-                //        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-                //    }
-                //    catch { }
-                //}
+                string url = null;
+                // Kestrel
+                var addresses = app.Services.GetService<IServerAddressesFeature>()?.Addresses;
+                var address = addresses?.FirstOrDefault();
+                if (!string.IsNullOrEmpty(address))
+                {
+                    url = address.TrimEnd('/') + "/swagger";
+                }
+                else
+                {
+                    // IIS Express
+                    var port = Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORT");
+                    if (!string.IsNullOrEmpty(port))
+                    {
+                        url = $"https://localhost:{port}/swagger";
+                    }
+                }
+                if (!string.IsNullOrEmpty(url))
+                {
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    }
+                    catch { }
+                }
             });
 
             // Middleware
@@ -150,11 +155,11 @@ namespace db_query_v1._0._0._1
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
-                //app.UseSwagger();
-                //app.UseSwaggerUI(c =>
-                //{
-                //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
-                //});
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
+                });
             }
             else
             {
