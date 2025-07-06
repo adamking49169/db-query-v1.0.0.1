@@ -16,25 +16,51 @@ namespace db_query_v1._0._0._1.Services
 
         public async Task<string> SearchAsync(string query)
         {
-            var url = $"https://api.duckduckgo.com/?q={Uri.EscapeDataString(query)}&format=json&no_redirect=1&skip_disambig=1";
+            var url = $"www.api.duckduckgo.com/?q={query}&format=json&pretty=1";
             var response = await _httpClient.GetStringAsync(url);
             var json = JObject.Parse(response);
             var results = new StringBuilder();
+
             var topics = json["RelatedTopics"] as JArray;
             if (topics != null)
             {
                 int count = 0;
+
                 foreach (var topic in topics)
                 {
+                    // Check if this is a direct topic
                     var text = topic["Text"]?.ToString();
-                    if (!string.IsNullOrEmpty(text))
+                    var urlItem = topic["FirstURL"]?.ToString();
+
+                    if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(urlItem))
                     {
-                        results.AppendLine("- " + text);
+                        results.AppendLine($"- {text} ({urlItem})");
                         if (++count == 3) break;
+                        continue;
                     }
+
+                    // Check if this is a category with nested Topics
+                    var subTopics = topic["Topics"] as JArray;
+                    if (subTopics != null)
+                    {
+                        foreach (var subTopic in subTopics)
+                        {
+                            var subText = subTopic["Text"]?.ToString();
+                            var subUrl = subTopic["FirstURL"]?.ToString();
+
+                            if (!string.IsNullOrEmpty(subText) && !string.IsNullOrEmpty(subUrl))
+                            {
+                                results.AppendLine($"- {subText} ({subUrl})");
+                                if (++count == 3) break;
+                            }
+                        }
+                    }
+
+                    if (count == 3) break;
                 }
             }
-            return results.ToString();
+
+            return string.IsNullOrWhiteSpace(results.ToString()) ? "No results found." : results.ToString();
         }
     }
 }

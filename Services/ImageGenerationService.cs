@@ -19,32 +19,36 @@ namespace db_query_v1._0._0._1.Services
         {
             var requestBody = new
             {
-                model = "dall-e-2",    
-                prompt = prompt,
+                model = "dall-e-3",
+                prompt,
                 n = 1,
-                size = "512x512"
+                size = "1024x1024",
+                response_format = "url"
             };
 
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", _apiKey);
 
             var response = await _httpClient.PostAsJsonAsync(
-     "https://api.openai.com/v1/images/generations",
-     requestBody
- );
+                      "https://api.openai.com/v1/images/generations",
+                requestBody);
 
             var sentJson = JsonSerializer.Serialize(requestBody);
             var body = await response.Content.ReadAsStringAsync();
 
-            Console.WriteLine($" JSON payload: {sentJson}");
-            Console.WriteLine($" HTTP {(int)response.StatusCode}: {body}");
+            Console.WriteLine($"JSON payload: {sentJson}");
+            Console.WriteLine($"HTTP {(int)response.StatusCode}: {body}");
 
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new InvalidOperationException(
+                    $"Image generation failed: {(int)response.StatusCode} {body}");
+            }
 
-            var result = await response.Content
-                .ReadFromJsonAsync<DallEResponse>();
-            return result?.Data?.FirstOrDefault()?.Url
-                   ?? string.Empty;
+            var result = JsonSerializer.Deserialize<DallEResponse>(body,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            return result?.Data?.FirstOrDefault()?.Url ?? string.Empty;
         }
 
         private class DallEResponse

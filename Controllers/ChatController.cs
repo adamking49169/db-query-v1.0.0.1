@@ -320,7 +320,7 @@ namespace db_query_v1._0._0._1.Controllers
         new { role = "system", content = systemMessage },
         new { role = "user", content = userInput }
     },
-                max_tokens = 1000, 
+                max_tokens = 500, 
                 temperature = 0.3, 
                 stream = true
             };
