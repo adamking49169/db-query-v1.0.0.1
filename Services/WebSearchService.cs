@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,8 @@ namespace db_query_v1._0._0._1.Services
 
         public async Task<string> SearchAsync(string query)
         {
-            var url = $"www.api.duckduckgo.com/?q={query}&format=json&pretty=1";
+            //var url = $"www.api.duckduckgo.com/?q={query}&format=json&pretty=1";
+            var url = $"?q={Uri.EscapeDataString(query)}&format=json&no_redirect=1&skip_disambig=1";
             var response = await _httpClient.GetStringAsync(url);
             var json = JObject.Parse(response);
             var results = new StringBuilder();
