@@ -17,10 +17,34 @@ namespace db_query_v1._0._0._1.Services
 
         public async Task<string> SearchAsync(string query)
         {
-            //var url = $"www.api.duckduckgo.com/?q={query}&format=json&pretty=1";
+            const int maxQueryLength = 200;
+            if (query.Length > maxQueryLength)
+            {
+                var words = query.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                query = string.Join(" ", words.Take(30));
+            }
             var url = $"?q={Uri.EscapeDataString(query)}&format=json&no_redirect=1&skip_disambig=1";
-            var response = await _httpClient.GetStringAsync(url);
-            var json = JObject.Parse(response);
+            string response;
+            try
+            {
+                response = await _httpClient.GetStringAsync(url);
+            }
+            catch (Exception ex)
+            {
+                return $"Search error: {ex.Message}";
+            }
+
+            JObject json;
+            try
+            {
+                json = JObject.Parse(response);
+            }
+            catch (Exception ex)
+            {
+                return $"Search error: {ex.Message}";
+            }
+
+
             var results = new StringBuilder();
 
             var topics = json["RelatedTopics"] as JArray;
