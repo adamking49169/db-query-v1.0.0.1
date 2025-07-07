@@ -24,9 +24,16 @@ namespace db_query_v1._0._0._1.Services
             var results = new StringBuilder();
 
             var topics = json["RelatedTopics"] as JArray;
+
+            // Debug: Inspect tokens with values in RelatedTopics
+            var info = topics
+                .Where(x => x.HasValues)
+                .Select(x => (x.Path, x.Type));
+
             if (topics != null)
             {
                 int count = 0;
+                const int maxResults = 10;
 
                 foreach (var topic in topics)
                 {
@@ -37,7 +44,7 @@ namespace db_query_v1._0._0._1.Services
                     if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(urlItem))
                     {
                         results.AppendLine($"- {text} ({urlItem})");
-                        if (++count == 3) break;
+                        if (++count == maxResults) break;
                         continue;
                     }
 
@@ -53,12 +60,12 @@ namespace db_query_v1._0._0._1.Services
                             if (!string.IsNullOrEmpty(subText) && !string.IsNullOrEmpty(subUrl))
                             {
                                 results.AppendLine($"- {subText} ({subUrl})");
-                                if (++count == 3) break;
+                                if (++count == maxResults) break;
                             }
                         }
                     }
 
-                    if (count == 3) break;
+                    if (count == maxResults) break;
                 }
             }
 
