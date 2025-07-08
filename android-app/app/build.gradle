@@ -1,10 +1,21 @@
+// ----------------------------------------------------------------------------
+// 1) PLUGINS block must be at the very top.
+// ----------------------------------------------------------------------------
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
 }
 
+// ----------------------------------------------------------------------------
+// 2) Now you can read the property.
+// ----------------------------------------------------------------------------
+def openAiKey = project.findProperty("OPENAI_API_KEY") ?: ""
+
+// ----------------------------------------------------------------------------
+// 3) Android configuration
+// ----------------------------------------------------------------------------
 android {
-    namespace "com.example.chatapp"   // replace with your actual applicationId
+    namespace "com.example.chatapp"
     compileSdk 34
 
     defaultConfig {
@@ -14,18 +25,19 @@ android {
         versionCode 1
         versionName "1.0"
 
-        // Pull the key from local.properties (never check that file into VCS)
-        def openaiKey = project.findProperty("OPENAI_API_KEY") ?: ""
-        BuildConfig "String", "OPENAI_API_KEY", "\"${openaiKey}\""
+        // inject into BuildConfig
+        buildConfigField "String", "OPENAI_API_KEY", "\"${openAiKey}\""
     }
 
     buildTypes {
         debug {
-            // you can customize debug-specific settings here
+            // debug-only settings
         }
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            proguardFiles getDefaultProguardFile(
+                    "proguard-android-optimize.txt"
+            ), "proguard-rules.pro"
         }
     }
 
@@ -36,8 +48,18 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion "1.5.4"
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
 
+// ----------------------------------------------------------------------------
+// 4) Dependencies
+// ----------------------------------------------------------------------------
 dependencies {
     implementation "androidx.core:core-ktx:1.12.0"
     implementation "androidx.activity:activity-compose:1.8.0"

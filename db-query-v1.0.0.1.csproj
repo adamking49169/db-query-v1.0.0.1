@@ -59,5 +59,6 @@
   <ItemGroup>
     <Folder Include="android-app\.gradle\9.0-milestone-1\expanded\" />
     <Folder Include="android-app\.gradle\9.0-milestone-1\vcsMetadata\" />
+    <Folder Include="android-app\.gradle\kotlin\errors\" />
   </ItemGroup>
 </Project>
