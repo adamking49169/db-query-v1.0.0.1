@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Text;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 
@@ -11,6 +11,7 @@ namespace db_query_v1._0._0._1.Services
     {
         private readonly HttpClient _httpClient;
 
+        // Required for AddHttpClient<T>()
         public WebSearchService(HttpClient httpClient)
         {
             _httpClient = httpClient;
@@ -18,13 +19,16 @@ namespace db_query_v1._0._0._1.Services
 
         public async Task<string> SearchAsync(string query)
         {
+            // Limit long queries
             const int maxQueryLength = 200;
             if (query.Length > maxQueryLength)
             {
                 var words = query.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                query = string.Join(" ", words.Take(30));
+                query = string.Join(" ", words[..Math.Min(words.Length, 30)]);
             }
-            var url = $"search?q={Uri.EscapeDataString(query)}&num=10&hl=en&gl=us&client=firefox-b-d";
+
+            // Build search URL
+            var url = $"/search?q={Uri.EscapeDataString(query)}&num=10&hl=en&gl=us";
             string response;
             try
             {
@@ -35,31 +39,23 @@ namespace db_query_v1._0._0._1.Services
                 return $"Search error: {ex.Message}";
             }
 
+            // Parse HTML
             var doc = new HtmlDocument();
-            try
-            {
-                doc.LoadHtml(response);
-            }
-            catch (Exception ex)
-            {
-                return $"Search error: {ex.Message}";
-            }
-
+            doc.LoadHtml(response);
 
             var results = new StringBuilder();
             int count = 0;
             const int maxResults = 10;
-
 
             var nodes = doc.DocumentNode.SelectNodes("//div[@class='g']//a/h3");
             if (nodes != null)
             {
                 foreach (var h3 in nodes)
                 {
-
                     var a = h3.ParentNode;
                     var href = a.GetAttributeValue("href", string.Empty);
-                    var text = h3.InnerText.Trim();
+                    var text = WebUtility.HtmlDecode(h3.InnerText.Trim());
+
                     if (href.StartsWith("/url?q="))
                     {
                         href = href[7..];
@@ -68,17 +64,17 @@ namespace db_query_v1._0._0._1.Services
                             href = href[..idx];
                     }
 
-                    if (!string.IsNullOrEmpty(text) && href.StartsWith("http"))
+                    if (!string.IsNullOrEmpty(text) && Uri.IsWellFormedUriString(href, UriKind.Absolute))
                     {
-                       
-                            results.AppendLine($"- {text} ({href})");
-                            if (++count == maxResults) break;
+                        results.AppendLine($"- {text} ({href})");
+                        if (++count == maxResults) break;
                     }
-
                 }
             }
 
-            return string.IsNullOrWhiteSpace(results.ToString()) ? "No results found." : results.ToString();
+            return string.IsNullOrWhiteSpace(results.ToString())
+                ? "No results found."
+                : results.ToString();
         }
     }
 }

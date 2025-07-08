@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using System.Net.Http.Headers;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 
 namespace db_query_v1._0._0._1
 {
@@ -62,33 +63,43 @@ namespace db_query_v1._0._0._1
                 builder.Configuration["OPENAI_API_KEY"]));
 
             builder.Services.AddHttpClient<ImageGenerationService>();
-
             builder.Services.AddSingleton(sp => new ImageGenerationService(
                 sp.GetRequiredService<HttpClient>(),
                 builder.Configuration["OPENAI_API_KEY"]));
 
-            builder.Services.AddHttpClient<WebSearchService>(client =>
-            {
-                client.BaseAddress = new Uri("https://www.google.com/");
-                //client.BaseAddress = new Uri("https://api.duckduckgo.com/");
-                client.DefaultRequestHeaders.UserAgent.ParseAdd(
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                  "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                  "Chrome/124.0.0.0 Safari/537.36");
-                client.DefaultRequestHeaders.Accept.ParseAdd(
-                    "text/html,application/xhtml+xml,application/xml;q=0.9," +
-                    "image/avif,image/webp,image/apng,*/*;q=0.8");
-                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("en-US,en;q=0.9");
-                client.DefaultRequestHeaders.Referrer = new Uri("https://www.google.com/");
-                client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip, deflate, br");
-            })
-            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-            {
-                AutomaticDecompression =
-                    System.Net.DecompressionMethods.GZip |
-                    System.Net.DecompressionMethods.Deflate |
-                    System.Net.DecompressionMethods.Brotli
-            });
+            // Web Search (typed client with consent cookie)
+            builder.Services
+                .AddHttpClient<WebSearchService>(client =>
+                {
+                    client.BaseAddress = new Uri("https://www.google.com/");
+                    client.DefaultRequestHeaders.UserAgent.ParseAdd(
+                      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                      "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                      "Chrome/124.0.0.0 Safari/537.36");
+                    client.DefaultRequestHeaders.Accept.ParseAdd(
+                        "text/html,application/xhtml+xml,application/xml;q=0.9," +
+                        "image/avif,image/webp,image/apng,*/*;q=0.8");
+                    client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("en-US,en;q=0.9");
+                    client.DefaultRequestHeaders.Referrer = new Uri("https://www.google.com/");
+                })
+                .ConfigurePrimaryHttpMessageHandler(() =>
+                {
+                    var handler = new HttpClientHandler
+                    {
+                        UseCookies = true,
+                        CookieContainer = new CookieContainer(),
+                        AutomaticDecompression =
+                            DecompressionMethods.GZip |
+                            DecompressionMethods.Deflate |
+                            DecompressionMethods.Brotli
+                    };
+                    // Pretend we've already accepted the UK cookie consent
+                    handler.CookieContainer.Add(
+                        new Uri("https://www.google.com"),
+                        new Cookie("CONSENT", "YES+GB") { Domain = ".google.com" }
+                    );
+                    return handler;
+                });
 
             // MVC & API
             builder.Services.AddControllersWithViews();
@@ -141,7 +152,6 @@ namespace db_query_v1._0._0._1
             app.Lifetime.ApplicationStarted.Register(() =>
             {
                 string url = null;
-                // Kestrel
                 var addresses = app.Services.GetService<IServerAddressesFeature>()?.Addresses;
                 var address = addresses?.FirstOrDefault();
                 if (!string.IsNullOrEmpty(address))
@@ -150,7 +160,6 @@ namespace db_query_v1._0._0._1
                 }
                 else
                 {
-                    // IIS Express
                     var port = Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORT");
                     if (!string.IsNullOrEmpty(port))
                     {
@@ -159,11 +168,7 @@ namespace db_query_v1._0._0._1
                 }
                 if (!string.IsNullOrEmpty(url))
                 {
-                    try
-                    {
-                        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-                    }
-                    catch { }
+                    try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); } catch { }
                 }
             });
 
