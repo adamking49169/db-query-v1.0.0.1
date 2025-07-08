@@ -49,6 +49,18 @@ This repository contains an ASP.NET Core 8.0 web application that integrates Ope
 
 A GitHub Actions workflow is included for deploying the app to Azure App Service. Configure the `AZURE_WEBAPP_NAME` variable and add an `AZURE_WEBAPP_PUBLISH_PROFILE` secret to your repository to use it【F:.github/workflows/azure-webapps-dotnet-core.yml†L23-L88】.
 
+
+## Android App
+
+A basic Android client built with Kotlin and Jetpack Compose is provided in the `android-app` directory. It calls the OpenAI API directly to mimic the chat interface.
+
+### Building the Android app
+
+1. Install [Android Studio](https://developer.android.com/studio).
+2. Open the `android-app` folder as a project.
+3. Replace `YOUR_API_KEY` in `app/build.gradle` with your OpenAI key.
+4. Build and run on an emulator or device.
+
 ## License
 
 This project currently does not include a specific license file. Please add an appropriate license if you plan to publish or distribute the code.

@@ -1,0 +1,41 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.example.chatapp"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+buildConfigField "String", "OPENAI_API_KEY", "\"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\""
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.4'
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.activity:activity-compose:1.8.0'
+    implementation 'androidx.compose.ui:ui:1.5.4'
+    implementation 'androidx.compose.ui:ui-tooling-preview:1.5.4'
+    implementation 'androidx.compose.material3:material3:1.1.2'
+
+    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
+}
