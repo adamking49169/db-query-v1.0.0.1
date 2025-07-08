@@ -16,7 +16,7 @@ android {
 
         // Pull the key from local.properties (never check that file into VCS)
         def openaiKey = project.findProperty("OPENAI_API_KEY") ?: ""
-        buildConfigField "String", "OPENAI_API_KEY", "\"${openaiKey}\""
+        BuildConfig "String", "OPENAI_API_KEY", "\"${openaiKey}\""
     }
 
     buildTypes {

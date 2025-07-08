@@ -9,19 +9,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
+import com.example.chatapp.BuildConfig
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            ChatApp()
-        }
+        setContent { ChatApp() }
     }
 }
 
@@ -30,6 +33,8 @@ class MainActivity : ComponentActivity() {
 fun ChatApp() {
     var messages by remember { mutableStateOf(listOf<String>()) }
     var userInput by remember { mutableStateOf("") }
+    // get a CoroutineScope tied to this composable
+    val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.padding(16.dp)) {
         messages.forEach { Text(it) }
@@ -44,12 +49,16 @@ fun ChatApp() {
                 val input = userInput
                 userInput = ""
                 messages = messages + "Me: $input"
-                LaunchedEffect(input) {
+
+                // launch the network call on Dispatchers.IO
+                scope.launch {
                     val reply = sendMessage(input)
                     messages = messages + "Bot: $reply"
                 }
             },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
         ) {
             Text("Send")
         }
@@ -57,28 +66,31 @@ fun ChatApp() {
 }
 
 suspend fun sendMessage(text: String): String = withContext(Dispatchers.IO) {
+    // now BuildConfig is in scope
     val key = BuildConfig.OPENAI_API_KEY
-    val json = JSONObject()
-    json.put("model", "gpt-3.5-turbo")
-    val messages = listOf(mapOf("role" to "user", "content" to text))
-    json.put("messages", messages)
+
+    val json = JSONObject().apply {
+        put("model", "gpt-3.5-turbo")
+        put("messages", listOf(mapOf("role" to "user", "content" to text)))
+    }
 
     val client = OkHttpClient()
     val mediaType = "application/json".toMediaType()
-    val requestBody = json.toString().toRequestBody(mediaType)
+    val body = json.toString().toRequestBody(mediaType)
 
     val request = Request.Builder()
         .url("https://api.openai.com/v1/chat/completions")
         .header("Authorization", "Bearer $key")
-        .post(requestBody)
+        .post(body)
         .build()
 
-    client.newCall(request).execute().use { response ->
-        if (!response.isSuccessful) return@withContext "Error: ${'$'}{response.code}"
-        val body = response.body?.string() ?: return@withContext "No response"
-        val obj = JSONObject(body)
-        val choices = obj.getJSONArray("choices")
-        val message = choices.getJSONObject(0).getJSONObject("message")
-        message.getString("content")
+    client.newCall(request).execute().use { resp ->
+        if (!resp.isSuccessful) return@withContext "Error ${resp.code}"
+        JSONObject(resp.body?.string() ?: "").run {
+            getJSONArray("choices")
+                .getJSONObject(0)
+                .getJSONObject("message")
+                .getString("content")
+        }
     }
 }
