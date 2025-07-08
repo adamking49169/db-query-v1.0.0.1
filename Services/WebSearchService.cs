@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 
 namespace db_query_v1._0._0._1.Services
 {
@@ -23,7 +24,7 @@ namespace db_query_v1._0._0._1.Services
                 var words = query.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 query = string.Join(" ", words.Take(30));
             }
-            var url = $"?q={Uri.EscapeDataString(query)}&format=json&no_redirect=1&skip_disambig=1";
+            var url = $"search?q={Uri.EscapeDataString(query)}&num=10&hl=en&gl=us&client=firefox-b-d";
             string response;
             try
             {
@@ -34,10 +35,10 @@ namespace db_query_v1._0._0._1.Services
                 return $"Search error: {ex.Message}";
             }
 
-            JObject json;
+            var doc = new HtmlDocument();
             try
             {
-                json = JObject.Parse(response);
+                doc.LoadHtml(response);
             }
             catch (Exception ex)
             {
@@ -46,50 +47,34 @@ namespace db_query_v1._0._0._1.Services
 
 
             var results = new StringBuilder();
+            int count = 0;
+            const int maxResults = 10;
 
-            var topics = json["RelatedTopics"] as JArray;
 
-            // Debug: Inspect tokens with values in RelatedTopics
-            var info = topics
-                .Where(x => x.HasValues)
-                .Select(x => (x.Path, x.Type));
-
-            if (topics != null)
+            var nodes = doc.DocumentNode.SelectNodes("//div[@class='g']//a/h3");
+            if (nodes != null)
             {
-                int count = 0;
-                const int maxResults = 10;
-
-                foreach (var topic in topics)
+                foreach (var h3 in nodes)
                 {
-                    // Check if this is a direct topic
-                    var text = topic["Text"]?.ToString();
-                    var urlItem = topic["FirstURL"]?.ToString();
 
-                    if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(urlItem))
+                    var a = h3.ParentNode;
+                    var href = a.GetAttributeValue("href", string.Empty);
+                    var text = h3.InnerText.Trim();
+                    if (href.StartsWith("/url?q="))
                     {
-                        results.AppendLine($"- {text} ({urlItem})");
-                        if (++count == maxResults) break;
-                        continue;
+                        href = href[7..];
+                        var idx = href.IndexOf('&');
+                        if (idx > 0)
+                            href = href[..idx];
                     }
 
-                    // Check if this is a category with nested Topics
-                    var subTopics = topic["Topics"] as JArray;
-                    if (subTopics != null)
+                    if (!string.IsNullOrEmpty(text) && href.StartsWith("http"))
                     {
-                        foreach (var subTopic in subTopics)
-                        {
-                            var subText = subTopic["Text"]?.ToString();
-                            var subUrl = subTopic["FirstURL"]?.ToString();
-
-                            if (!string.IsNullOrEmpty(subText) && !string.IsNullOrEmpty(subUrl))
-                            {
-                                results.AppendLine($"- {subText} ({subUrl})");
-                                if (++count == maxResults) break;
-                            }
-                        }
+                       
+                            results.AppendLine($"- {text} ({href})");
+                            if (++count == maxResults) break;
                     }
 
-                    if (count == maxResults) break;
                 }
             }
 

@@ -69,7 +69,8 @@ namespace db_query_v1._0._0._1
 
             builder.Services.AddHttpClient<WebSearchService>(client =>
             {
-                client.BaseAddress = new Uri("https://api.duckduckgo.com/");
+                client.BaseAddress = new Uri("https://www.google.com/");
+                //client.BaseAddress = new Uri("https://api.duckduckgo.com/");
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; Bot/1.0)");
             });
 

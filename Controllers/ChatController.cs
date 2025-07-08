@@ -213,7 +213,7 @@ namespace db_query_v1._0._0._1.Controllers
                 var aiResponse = await GetOpenAiResponseStreamed(fullUserInput, user);
 
                 // Create and track the assistant's reply, also linked to the same session
-                var assistantMessage = new ChatHistoryItem
+                 var assistantMessage = new ChatHistoryItem
                 {
                     UserIdentityId = userId,
                     PreviousChat = previousChatEntry,
