@@ -35,4 +35,29 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="android-app\.idea\AndroidProjectSystem.xml" />
+    <Content Include="android-app\.idea\caches\deviceStreaming.xml" />
+    <Content Include="android-app\.idea\gradle.xml" />
+    <Content Include="android-app\.idea\migrations.xml" />
+    <Content Include="android-app\.idea\misc.xml" />
+    <Content Include="android-app\.idea\runConfigurations.xml" />
+    <Content Include="android-app\.idea\vcs.xml" />
+    <Content Include="android-app\.idea\workspace.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="android-app\.gradle\9.0-milestone-1\checksums\checksums.lock" />
+    <None Include="android-app\.gradle\9.0-milestone-1\fileChanges\last-build.bin" />
+    <None Include="android-app\.gradle\9.0-milestone-1\fileHashes\fileHashes.lock" />
+    <None Include="android-app\.gradle\9.0-milestone-1\gc.properties" />
+    <None Include="android-app\.gradle\buildOutputCleanup\buildOutputCleanup.lock" />
+    <None Include="android-app\.gradle\buildOutputCleanup\cache.properties" />
+    <None Include="android-app\.gradle\config.properties" />
+    <None Include="android-app\.gradle\vcs-1\gc.properties" />
+    <None Include="android-app\.idea\.gitignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="android-app\.gradle\9.0-milestone-1\expanded\" />
+    <Folder Include="android-app\.gradle\9.0-milestone-1\vcsMetadata\" />
+  </ItemGroup>
 </Project>

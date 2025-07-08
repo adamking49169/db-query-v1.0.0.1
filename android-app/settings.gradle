@@ -1,2 +1,28 @@
-rootProject.name = 'ChatApp'
-include ':app'
+// ────────────────────────────────────────────────
+// 1) This must be the very first block in the file
+// ────────────────────────────────────────────────
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+
+// ────────────────────────────────────────────────
+// 2) (Optional, but recommended in AGP 7+) force
+//    all modules to use the centralized repos
+// ────────────────────────────────────────────────
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// ────────────────────────────────────────────────
+// 3) Then your project‐name and included modules
+// ────────────────────────────────────────────────
+rootProject.name = "ChatApp"
+include(":app")
