@@ -53,6 +53,7 @@
     <None Include="android-app\.gradle\buildOutputCleanup\buildOutputCleanup.lock" />
     <None Include="android-app\.gradle\buildOutputCleanup\cache.properties" />
     <None Include="android-app\.gradle\config.properties" />
+    <None Include="android-app\.gradle\gradle.properties" />
     <None Include="android-app\.gradle\vcs-1\gc.properties" />
     <None Include="android-app\.idea\.gitignore" />
   </ItemGroup>
