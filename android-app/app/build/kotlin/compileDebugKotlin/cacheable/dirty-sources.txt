@@ -1,0 +1,1 @@
+C:\Users\adam\source\repos\db-query-v1.0.0.1\android-app\app\src\main\java\com\example\chatapp\MainActivity.kt
