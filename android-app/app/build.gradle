@@ -9,7 +9,7 @@ plugins {
 // ----------------------------------------------------------------------------
 // 2) Now you can read the property.
 // ----------------------------------------------------------------------------
-def openAiKey = project.findProperty("OPENAI_API_KEY") ?: ""
+def openAiKey = project.findProperty("OPENAI_API_KEY") ?: System.getenv("OPENAI_API_KEY") ?: ""
 
 // ----------------------------------------------------------------------------
 // 3) Android configuration
